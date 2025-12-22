@@ -12,16 +12,24 @@
   */
 
 /*STM32芯片驱动头文件*/
-#include "stm32f10x.h"  
+#include "stm32f103xe.h"  
 
 /*自己的驱动头文件*/
 #include "driver_wireless.h"
-#include "driver_dht11.h"
-#include "driver_JiaShiQi.h"
-#include "driver_ChuangLian.h"
-#include "driver_DiaoDeng.h"
-#include "serial.h"
-#include "delay.h"
+
+#include "./SYSTEM/sys/sys.h"
+#include "./SYSTEM/usart/usart.h"
+#include "./SYSTEM/delay/delay.h"
+#include "./USMART/usmart.h"
+#include "./BSP/LED/led.h"
+#include "./BSP/DHT11/dht11.h"
+#include "./BSP/KEY/key.h"
+#include "./BSP/LOCK/lock.h"
+#include "./BSP/SR602/sr602.h"
+#include "./BSP/SW-18010P/sw.h"
+#include "./BSP/LED-WS2812/ws.h"
+#include "./BSP/TIMER/gtim.h"
+#include "./BSP/TIMER/btim.h"
 
 /*C语言头文件*/
 #include <stdio.h>
@@ -47,11 +55,11 @@
   * @注意	需要根据自己的信息填写，连接2.4GHz频段的无线网络，token根据token生成工具填写规则生成  
   */
 #define ONENET_MQTT_SET_ENABLE	1				//使能属性设置功能  	1-开启	0-关闭 	如不需使用属性设置功能，可以不使用cJson减少内存开销，以及加快运行速度
-#define WIFI_SSID "CMCC-jKpT"					//WIFI用户名
-#define WIFI_PASSWORD "fr4jeh4g"				//WIFI密码
-#define ONENET_MQTT_PRODUCT_ID "eueUyeRMT0"		//OneNET MQTT产品ID
-#define ONENET_MQTT_DEVICE_NAME "device-001"	//OneNET MQTT设备名称
-#define ONENET_MQTT_TOKEN "version=2018-10-31&res=products%2FeueUyeRMT0%2Fdevices%2Fdevice-001&et=2054270651&method=md5&sign=UzXNSJMRTU1OKJiSEN61Ig%3D%3D"//设备token		
+#define WIFI_SSID "vivoS10"					//WIFI用户名
+#define WIFI_PASSWORD "88888888"				//WIFI密码
+#define ONENET_MQTT_PRODUCT_ID "VQmf8177GX"		//OneNET MQTT产品ID
+#define ONENET_MQTT_DEVICE_NAME "RCT6_mini"	//OneNET MQTT设备名称
+#define ONENET_MQTT_TOKEN "version=2018-10-31&res=products%2FVQmf8177GX%2Fdevices%2FRCT6_mini&et=2080824150&method=md5&sign=UCIR3KVM1qb22J7U3qOHMA%3D%3D"//设备token		
 
 /**   
   * @简要  	连接onenet以及下发数据和上报数据的AT指令集
@@ -74,11 +82,11 @@
   * @简要  	onenet产品的属性结构体
   * @注意	这里需要按照onenet产品中创建的属性值来创建并初始化OneNET_MQTT_Data结构体内容，数据类型和名称要一致 
   */
-OneNET_MQTT_Data ChuangLian_Control = {"ChuangLian_Control", TYPE_BOOL, {.bool_value = W_FALSE}};
-OneNET_MQTT_Data JiaShiQi_Control = {"JiaShiQi_Control", TYPE_BOOL, {.bool_value = W_FALSE}};
-OneNET_MQTT_Data DiaoDeng_Control = {"DiaoDeng_Control", TYPE_INT, {.int_value = 0}};
-OneNET_MQTT_Data sensor_status = {"sensor_status", TYPE_INT, {.int_value = 0}};
-OneNET_MQTT_Data temperature = {"temperature", TYPE_FLOAT, {.float_value = 0.0f}};
+OneNET_MQTT_Data Lock_Control = {"Lock_Control", TYPE_BOOL, {.bool_value = W_FALSE}};
+OneNET_MQTT_Data Vibration_detected = {"Vibration_detected", TYPE_BOOL, {.bool_value = W_FALSE}};
+OneNET_MQTT_Data human_detected = {"human_detected", TYPE_BOOL, {.bool_value = W_FALSE}};
+OneNET_MQTT_Data RBGLED = {"RBGLED", TYPE_INT, {.int_value = 0}};
+OneNET_MQTT_Data temp = {"temp", TYPE_FLOAT, {.float_value = 0.0f}};
 OneNET_MQTT_Data humidity = {"humidity", TYPE_FLOAT, {.float_value = 0.0f}};
 
 /**   
@@ -86,11 +94,11 @@ OneNET_MQTT_Data humidity = {"humidity", TYPE_FLOAT, {.float_value = 0.0f}};
   * @注意	这里只适用数据上报函数，这里填写需要上报数据的属性结构体指针
   */
 OneNET_MQTT_Data *onenet_data_array[] = {
-    &ChuangLian_Control,
-    &JiaShiQi_Control,
-	&DiaoDeng_Control,
-	&sensor_status,
-    &temperature,
+    &Lock_Control,
+    &Vibration_detected,
+	  &human_detected,
+	  &RBGLED,
+    &temp,
     &humidity, 
 };
 
