@@ -24,7 +24,7 @@
 
 #include "./BSP/SW-18010P/sw.h"
 #include "./SYSTEM/usart/usart.h"
-
+uint8_t  Vibration_detected_status = 0;
 /**
  * @brief       初始化SW-18010P的IO口,配置外部中断
  * @param       无
@@ -71,10 +71,12 @@ void EXTI9_5_IRQHandler(void)
         if (SW_DO_IN == 1)  /* 上升沿:检测到震动 */
         {
             printf("SW-18010P: Vibration detected! (PC6=HIGH, Rising Edge)\r\n");
+            Vibration_detected_status = 1;
         }
         else  /* 下降沿:震动消失 */
         {
             printf("SW-18010P: No vibration (PC6=LOW, Falling Edge)\r\n");
+            Vibration_detected_status = 0;
         }
     }
 }

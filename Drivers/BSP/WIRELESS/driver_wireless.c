@@ -108,9 +108,9 @@ OneNET_MQTT_Data *onenet_data_array[] = {
   * @简要  	替换外部函数名字
   * @注意	这里后面的函数名字需要替换你自己的函数名字
   */
-#define wireless_serial_init    uart2_init
+#define wireless_serial_init    uart3_init
 #define wireless_delay_ms  		delay_ms			
-#define wireless_send_data 		uart2_send_string	
+#define wireless_send_data 		uart3_send_string	
 #define wireless_log_print		printf				
 
 /**   
@@ -304,10 +304,11 @@ void wireless_system_handler(void)
   */
 void wireless_onenet_data_handler(void)
 { 
-	ChuangLian_Control.value.bool_value = ChuangLian_status;       	//赋值给onenet对应的属性值，注意属性的数据类型
-	JiaShiQi_Control.value.bool_value = JiaShiQi_status;       		//赋值给onenet对应的属性值，注意属性的数据类型
-	DiaoDeng_Control.value.int_value = DiaoDeng_status;       		//赋值给onenet对应的属性值，注意属性的数据类型
-	temperature.value.float_value = dht11_data.temp;       			//赋值给onenet对应的属性值，注意属性的数据类型
+	Lock_Control.value.bool_value = Lock_status;       	//赋值给onenet对应的属性值，注意属性的数据类型
+	Vibration_detected.value.bool_value = Vibration_detected_status;       		//赋值给onenet对应的属性值，注意属性的数据类型
+  human_detected.value.bool_value = human_detected_status; 
+	RBGLED.value.int_value = RBGLED_status;       		//赋值给onenet对应的属性值，注意属性的数据类型
+	temp.value.float_value = dht11_data.temp;       			//赋值给onenet对应的属性值，注意属性的数据类型
 	humidity.value.float_value = dht11_data.humi;         			//赋值给onenet对应的属性值，注意属性的数据类型
 }
 
@@ -518,13 +519,10 @@ void wireless_receive_command_respond(uint32_t respond_id, uint16_t code, char *
   */
 void wireless_command_control(void)
 {
-	if(ChuangLian_Control.value.bool_value == W_TRUE) 			ChuangLian_Control_ON();
-	else if(ChuangLian_Control.value.bool_value == W_FALSE) 	ChuangLian_Control_OFF();
+	if(Lock_Control.value.bool_value == W_TRUE) 			lock_set(0);
+	else if(Lock_Control.value.bool_value == W_FALSE) 	lock_set(1);
 	
-	if(JiaShiQi_Control.value.bool_value == W_TRUE) 			JiaShiQi_Control_ON();
-	else if(JiaShiQi_Control.value.bool_value == W_FALSE) 		JiaShiQi_Control_OFF();
-	
-	if(DiaoDeng_Control.value.int_value >= 0 && DiaoDeng_Control.value.int_value <= 100) 	DiaoDeng_Control_PWM(DiaoDeng_Control.value.int_value);
+	if(RBGLED.value.int_value >= 0 && RBGLED.value.int_value <= 100) 	ws2812_set_warm_yellow(RBGLED.value.int_value);
 }
 
 /**   

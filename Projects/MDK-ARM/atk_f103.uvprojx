@@ -478,6 +478,36 @@
               <FileType>5</FileType>
               <FilePath>..\..\Drivers\BSP\WIRELESS\driver_wireless.h</FilePath>
             </File>
+            <File>
+              <FileName>dht11.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Drivers\BSP\DHT11\dht11.h</FilePath>
+            </File>
+            <File>
+              <FileName>key.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Drivers\BSP\KEY\key.h</FilePath>
+            </File>
+            <File>
+              <FileName>ws.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Drivers\BSP\LED-WS2812\ws.h</FilePath>
+            </File>
+            <File>
+              <FileName>lock.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Drivers\BSP\LOCK\lock.h</FilePath>
+            </File>
+            <File>
+              <FileName>sr602.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Drivers\BSP\SR602\sr602.h</FilePath>
+            </File>
+            <File>
+              <FileName>sw.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Drivers\BSP\SW-18010P\sw.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
