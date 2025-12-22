@@ -1,86 +1,98 @@
 /**
- ****************************************************************************************************
- * @file        usart.h
- * @author      锟斤拷锟斤拷原锟斤拷锟脚讹拷(ALIENTEK)
- * @version     V1.0
- * @date        2020-04-17
- * @brief       锟斤拷锟节筹拷始锟斤拷锟斤拷锟斤拷(一锟斤拷锟角达拷锟斤拷1)锟斤拷支锟斤拷printf
- * @license     Copyright (c) 2020-2032, 锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟接科硷拷锟斤拷锟睫癸拷司
- ****************************************************************************************************
- * @attention
- *
- * 实锟斤拷平台:锟斤拷锟斤拷原锟斤拷 STM32F103锟斤拷锟斤拷锟斤拷
- * 锟斤拷锟斤拷锟斤拷频:www.yuanzige.com
- * 锟斤拷锟斤拷锟斤拷坛:www.openedv.com
- * 锟斤拷司锟斤拷址:www.alientek.com
- * 锟斤拷锟斤拷锟街�:openedv.taobao.com
- *
- * 锟睫革拷说锟斤拷
- * V1.0 20200417
- * 锟斤拷一锟轿凤拷锟斤拷
- *
- ****************************************************************************************************
- */
+  *	Copyright (c) [2025] [小王嵌入式][wang2869902214@outlook.com]
+  *	[stm32f103c8t6-esp8266-onenet-mqtt] is licensed under Mulan PSL v2.
+  *	You can use this software according to the terms and conditions of the Mulan
+  *	PSL v2.
+  *	You may obtain a copy of Mulan PSL v2 at:
+  *			 http://license.coscl.org.cn/MulanPSL2
+  *	THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY
+  *	KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+  *	NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+  *	See the Mulan PSL v2 for more details.
+  */
 
-#ifndef __USART_H
-#define __USART_H
+/*STM32芯片驱动头文件*/
+#include "stm32f10x.h"  
 
-#include "stdio.h"
-#include "./SYSTEM/sys/sys.h"
+/*自己的驱动头文件*/
+#include "driver_wireless.h"
+#include "driver_dht11.h"
+#include "driver_JiaShiQi.h"
+#include "driver_ChuangLian.h"
+#include "driver_DiaoDeng.h"
+#include "serial.h"
+#include "delay.h"
 
+/*C语言头文件*/
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
 
-/******************************************************************************************/
-/* 锟斤拷锟斤拷 锟斤拷 锟斤拷锟斤拷 锟斤拷锟斤拷 
- * 默锟斤拷锟斤拷锟斤拷锟経SART1锟斤拷.
- * 注锟斤拷: 通锟斤拷锟睫革拷锟斤拷12锟斤拷锟疥定锟斤拷,锟斤拷锟斤拷支锟斤拷USART1~UART7锟斤拷锟斤拷一锟斤拷锟斤拷锟斤拷.
- */
-#define USART_TX_GPIO_PORT                  GPIOA
-#define USART_TX_GPIO_PIN                   SYS_GPIO_PIN2
-#define USART_TX_GPIO_CLK_ENABLE()          do{ RCC->APB2ENR |= 1 << 2; }while(0)   /* PA锟斤拷时锟斤拷使锟斤拷 */
+/****************************************************************************************************
+  *@版权声明：本代码为博主原创代码，遵循 Mulan PSL v2开源协议，转载或使用请附上原代码出处和本声明。 *
+  *@CSDN文章：stm32与esp8266连接onenet的mqtt服务器进行数据上报与数据下发————送外卖的CV工程师        *
+  *@博客教程链接：https://blog.csdn.net/Wang2869902214/article/details/142501323                    *
+  *@哔站B站教程链接：                                                                               *
+  *@gitee地址：	 https://gitee.com/Wang2869902214/stm32f103c8t6-esp8266-onenet-mqtt.git             *
+  *@更新日期：2025-02-03                                                                            *
+  *@版本：V1.0                                                                                      *
+  *@QQ群聊：STM32连接onenet交流1群 983362248                                                        *
+  *@所需资料全部可以在群里下载，欢迎大家前来探讨~！                                                 *
+  *@版权声明：本代码为博主原创代码，遵循 Mulan PSL v2开源协议，转载或使用请附上原代码出处和本声明。 *
+  ****************************************************************************************************/
 
-#define USART_RX_GPIO_PORT                  GPIOA
-#define USART_RX_GPIO_PIN                   SYS_GPIO_PIN3
-#define USART_RX_GPIO_CLK_ENABLE()          do{ RCC->APB2ENR |= 1 << 2; }while(0)   /* PA锟斤拷时锟斤拷使锟斤拷 */
+/**   
+  * @简要  	wifi信息和onenet云平台产品信息
+  * @注意	需要根据自己的信息填写，连接2.4GHz频段的无线网络，token根据token生成工具填写规则生成  
+  */
+#define ONENET_MQTT_SET_ENABLE	1				//使能属性设置功能  	1-开启	0-关闭 	如不需使用属性设置功能，可以不使用cJson减少内存开销，以及加快运行速度
+#define WIFI_SSID "CMCC-jKpT"					//WIFI用户名
+#define WIFI_PASSWORD "fr4jeh4g"				//WIFI密码
+#define ONENET_MQTT_PRODUCT_ID "eueUyeRMT0"		//OneNET MQTT产品ID
+#define ONENET_MQTT_DEVICE_NAME "device-001"	//OneNET MQTT设备名称
+#define ONENET_MQTT_TOKEN "version=2018-10-31&res=products%2FeueUyeRMT0%2Fdevices%2Fdevice-001&et=2054270651&method=md5&sign=UzXNSJMRTU1OKJiSEN61Ig%3D%3D"//设备token		
 
-#define USART_UX                            USART2
-#define USART_UX_IRQn                       USART2_IRQn
-#define USART_UX_IRQHandler                 USART2_IRQHandler
-#define USART_UX_CLK_ENABLE()               do{ RCC->APB1ENR |= 1 << 17; }while(0)  /* USART1 时锟斤拷使锟斤拷 */
+/**   
+  * @简要  	连接onenet以及下发数据和上报数据的AT指令集
+  * @注意	这里一般无需更改，如果需要其他AT指令参数，可以在下方对应的位置更改参数 
+  */
+#define WIRELESS_WIFI_INFO "AT+CWJAP=\"" WIFI_SSID "\",\"" WIFI_PASSWORD "\"\r\n"		//AT指令：连接2.4GHz wifi  
+#define ONENET_MQTT_SERVER_INFO "AT+MQTTCONN=0,\"mqtts.heclouds.com\",1883,1\r\n"		//AT指令：连接onenet的mqtt服务器
+#define ONENET_MQTT_USERCFG_INFO "AT+MQTTUSERCFG=0,1,\"" ONENET_MQTT_DEVICE_NAME "\",\"" ONENET_MQTT_PRODUCT_ID "\",\"" ONENET_MQTT_TOKEN "\",0,0,\"\"\r\n" 	//AT指令：配置MQTT客户端的用户参数   
+#define ONENET_MQTT_PUBTOPIC "AT+MQTTPUBRAW=0,\"$sys/" ONENET_MQTT_PRODUCT_ID "/" ONENET_MQTT_DEVICE_NAME "/thing/property/post\""			//AT指令：设备属性上报请求（发布）
+#define ONENET_MQTT_PUB_SET "AT+MQTTPUB=0,\"$sys/" ONENET_MQTT_PRODUCT_ID "/" ONENET_MQTT_DEVICE_NAME "/thing/property/set_reply\"" 	//AT指令：设备属性设置响应（发布）
+#define ONENET_MQTT_REPLY_TOPIC "AT+MQTTSUB=0,\"$sys/" ONENET_MQTT_PRODUCT_ID "/" ONENET_MQTT_DEVICE_NAME "/thing/property/post/reply\",0\r\n"	//AT指令：设备上报响应请求（订阅）
+#if ONENET_MQTT_SET_ENABLE
+	#include "cJson.h"		//如果不使用属性设置，可以不用cJson文件代码
+	#define ONENET_MQTT_SET_TOPIC "AT+MQTTSUB=0,\"$sys/" ONENET_MQTT_PRODUCT_ID "/" ONENET_MQTT_DEVICE_NAME "/thing/property/set\",0\r\n"	//AT指令：设备属性设置请求（订阅）
+	#define ONENET_MQTT_REVEIVE_SET_TOPIC   "\"$sys/" ONENET_MQTT_PRODUCT_ID "/" ONENET_MQTT_DEVICE_NAME "/thing/property/set\""                  //属性设置请求接收判断
+	#define ONENET_MQTT_REVEIVE_REPLY_TOPIC "\"$sys/" ONENET_MQTT_PRODUCT_ID "/" ONENET_MQTT_DEVICE_NAME "/thing/property/post/reply\""           //属性上报请求接收判断
+#endif
 
-/******************************************************************************************/
+/**   
+  * @简要  	onenet产品的属性结构体
+  * @注意	这里需要按照onenet产品中创建的属性值来创建并初始化OneNET_MQTT_Data结构体内容，数据类型和名称要一致 
+  */
+OneNET_MQTT_Data ChuangLian_Control = {"ChuangLian_Control", TYPE_BOOL, {.bool_value = W_FALSE}};
+OneNET_MQTT_Data JiaShiQi_Control = {"JiaShiQi_Control", TYPE_BOOL, {.bool_value = W_FALSE}};
+OneNET_MQTT_Data DiaoDeng_Control = {"DiaoDeng_Control", TYPE_INT, {.int_value = 0}};
+OneNET_MQTT_Data sensor_status = {"sensor_status", TYPE_INT, {.int_value = 0}};
+OneNET_MQTT_Data temperature = {"temperature", TYPE_FLOAT, {.float_value = 0.0f}};
+OneNET_MQTT_Data humidity = {"humidity", TYPE_FLOAT, {.float_value = 0.0f}};
 
-/******************************************************************************************/
-/* UART 时锟斤拷源锟斤拷锟斤拷
- * 说锟斤拷:
- * - APB1时锟斤拷源: 锟斤拷锟斤拷USART2, USART3, UART4, UART5, 锟斤拷锟狡碉拷锟轿�36MHz (PCLK1)
- * - APB2时锟斤拷源: 锟斤拷锟斤拷USART1, 锟斤拷锟狡碉拷锟轿�72MHz (PCLK2)
- * 
- * 锟斤拷锟绞癸拷锟紸PB1时锟斤拷源锟斤拷UART (锟斤拷USART2/3/4/5), 锟斤拷使锟斤拷锟斤拷锟铰宏定锟斤拷:
- * #define USART_UX_CLK_ENABLE()  do{ RCC->APB1ENR |= 1 << 17; }while(0)  /* USART2 时锟斤拷使锟斤拷(APB1) */
- * 锟斤拷确锟斤拷锟斤拷锟斤拷usart_init锟斤拷锟斤拷锟斤拷时锟斤拷频锟绞诧拷锟斤拷锟斤拷36MHz
- */
-#define USART_CLK_SOURCE_APB1_MAX_FREQ      36          /* APB1时锟斤拷源锟斤拷锟狡碉拷锟�: 36MHz */
-#define USART_CLK_SOURCE_APB2_MAX_FREQ      72          /* APB2时锟斤拷源锟斤拷锟狡碉拷锟�: 72MHz */
-
-/******************************************************************************************/
-
-
-#define USART_REC_LEN               200         /* 锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟街斤拷锟斤拷 200 */
-#define USART_EN_RX                 1           /* 使锟杰ｏ拷1锟斤拷/锟斤拷止锟斤拷0锟斤拷锟斤拷锟斤拷1锟斤拷锟斤拷 */
-
-
-extern uint8_t  g_usart_rx_buf[USART_REC_LEN];  /* 锟斤拷锟秸伙拷锟斤拷,锟斤拷锟経SART_REC_LEN锟斤拷锟街斤拷.末锟街斤拷为锟斤拷锟叫凤拷 */
-extern uint16_t g_usart_rx_sta;                 /* 锟斤拷锟斤拷状态锟斤拷锟� */
-
-void usart_init(uint32_t pclk2, uint32_t bound);
-
-void uart2_send_byte(uint8_t byte);
-void uart2_send_string(char *str);
-
-/* USART1 涓插彛鍑芥暟澹版槑 */
-void Serial_Init(uint32_t Baud);          /* 涓插彛鍒濆鍖� */
-void Serial_SendByte(uint8_t Byte);       /* 涓插彛鍙戦€佷竴涓瓧鑺� */
-void Serial_SendString(char *String);     /* 涓插彛鍙戦€佷竴涓瓧绗︿覆 *//* 锟斤拷锟节筹拷始锟斤拷锟斤拷锟斤拷 */
+/**   
+  * @简要  	onenet产品的属性值指针数组和数组大小
+  * @注意	这里只适用数据上报函数，这里填写需要上报数据的属性结构体指针
+  */
+OneNET_MQTT_Data *onenet_data_array[] = {
+    &ChuangLian_Control,
+    &JiaShiQi_Control,
+	&DiaoDeng_Control,
+	&sensor_status,
+    &temperature,
+    &humidity, 
+};
 
 #define DATA_ARRAY_SIZE (sizeof(onenet_data_array) / sizeof(onenet_data_array[0]))
 
@@ -88,7 +100,7 @@ void Serial_SendString(char *String);     /* 涓插彛鍙戦€佷竴涓瓧�
   * @简要  	替换外部函数名字
   * @注意	这里后面的函数名字需要替换你自己的函数名字
   */
-#define wireless_serial_init    usart_init
+#define wireless_serial_init    uart2_init
 #define wireless_delay_ms  		delay_ms			
 #define wireless_send_data 		uart2_send_string	
 #define wireless_log_print		printf				
