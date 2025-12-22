@@ -1,23 +1,23 @@
 /**
  ****************************************************************************************************
  * @file        usart.h
- * @author      ÕýµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
+ * @author      æ­£ç‚¹åŽŸå­å›¢é˜Ÿ(ALIENTEK)
  * @version     V1.0
  * @date        2020-04-17
- * @brief       ´®¿Ú³õÊ¼»¯´úÂë(Ò»°ãÊÇ´®¿Ú1)£¬Ö§³Öprintf
- * @license     Copyright (c) 2020-2032, ¹ãÖÝÊÐÐÇÒíµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
+ * @brief       ä¸²å£åˆå§‹åŒ–ä»£ç (ä¸€èˆ¬æ˜¯ä¸²å£1)ï¼Œæ”¯æŒprintf
+ * @license     Copyright (c) 2020-2032, å¹¿å·žå¸‚æ˜Ÿç¿¼ç”µå­ç§‘æŠ€æœ‰é™å…¬å¸
  ****************************************************************************************************
  * @attention
  *
- * ÊµÑéÆ½Ì¨:ÕýµãÔ­×Ó STM32F103¿ª·¢°å
- * ÔÚÏßÊÓÆµ:www.yuanzige.com
- * ¼¼ÊõÂÛÌ³:www.openedv.com
- * ¹«Ë¾ÍøÖ·:www.alientek.com
- * ¹ºÂòµØÖ·:openedv.taobao.com
+ * å®žéªŒå¹³å°:æ­£ç‚¹åŽŸå­ STM32F103å¼€å‘æ¿
+ * åœ¨çº¿è§†é¢‘:www.yuanzige.com
+ * æŠ€æœ¯è®ºå›:www.openedv.com
+ * å…¬å¸ç½‘å€:www.alientek.com
+ * è´­ä¹°åœ°å€:openedv.taobao.com
  *
- * ÐÞ¸ÄËµÃ÷
+ * ä¿®æ”¹è¯´æ˜Ž
  * V1.0 20200417
- * µÚÒ»´Î·¢²¼
+ * ç¬¬ä¸€æ¬¡å‘å¸ƒ
  *
  ****************************************************************************************************
  */
@@ -30,34 +30,40 @@
 
 
 /******************************************************************************************/
-/* Òý½Å ºÍ ´®¿Ú ¶¨Òå 
- * Ä¬ÈÏÊÇÕë¶ÔUSART1µÄ.
- * ×¢Òâ: Í¨¹ýÐÞ¸ÄÕâ12¸öºê¶¨Òå,¿ÉÒÔÖ§³ÖUSART1~UART7ÈÎÒâÒ»¸ö´®¿Ú.
+/* å¼•è„š å’Œ ä¸²å£ å®šä¹‰ 
+ * é»˜è®¤æ˜¯é’ˆå¯¹USART1çš„.
+ * æ³¨æ„: é€šè¿‡ä¿®æ”¹è¿™12ä¸ªå®å®šä¹‰,å¯ä»¥æ”¯æŒUSART1~UART7ä»»æ„ä¸€ä¸ªä¸²å£.
  */
 #define USART_TX_GPIO_PORT                  GPIOA
 #define USART_TX_GPIO_PIN                   SYS_GPIO_PIN9
-#define USART_TX_GPIO_CLK_ENABLE()          do{ RCC->APB2ENR |= 1 << 2; }while(0)   /* PA¿ÚÊ±ÖÓÊ¹ÄÜ */
+#define USART_TX_GPIO_CLK_ENABLE()          do{ RCC->APB2ENR |= 1 << 2; }while(0)   /* PAå£æ—¶é’Ÿä½¿èƒ½ */
 
 #define USART_RX_GPIO_PORT                  GPIOA
 #define USART_RX_GPIO_PIN                   SYS_GPIO_PIN10
-#define USART_RX_GPIO_CLK_ENABLE()          do{ RCC->APB2ENR |= 1 << 2; }while(0)   /* PA¿ÚÊ±ÖÓÊ¹ÄÜ */
+#define USART_RX_GPIO_CLK_ENABLE()          do{ RCC->APB2ENR |= 1 << 2; }while(0)   /* PAå£æ—¶é’Ÿä½¿èƒ½ */
 
 #define USART_UX                            USART1
 #define USART_UX_IRQn                       USART1_IRQn
 #define USART_UX_IRQHandler                 USART1_IRQHandler
-#define USART_UX_CLK_ENABLE()               do{ RCC->APB2ENR |= 1 << 14; }while(0)  /* USART1 Ê±ÖÓÊ¹ÄÜ */
+#define USART_UX_CLK_ENABLE()               do{ RCC->APB2ENR |= 1 << 14; }while(0)  /* USART1 æ—¶é’Ÿä½¿èƒ½ */
 
 /******************************************************************************************/
 
 
-#define USART_REC_LEN               200         /* ¶¨Òå×î´ó½ÓÊÕ×Ö½ÚÊý 200 */
-#define USART_EN_RX                 1           /* Ê¹ÄÜ£¨1£©/½ûÖ¹£¨0£©´®¿Ú1½ÓÊÕ */
+#define USART_REC_LEN               200         /* å®šä¹‰æœ€å¤§æŽ¥æ”¶å­—èŠ‚æ•° 200 */
+#define USART_EN_RX                 1           /* ä½¿èƒ½ï¼ˆ1ï¼‰/ç¦æ­¢ï¼ˆ0ï¼‰ä¸²å£1æŽ¥æ”¶ */
 
 
-extern uint8_t  g_usart_rx_buf[USART_REC_LEN];  /* ½ÓÊÕ»º³å,×î´óUSART_REC_LEN¸ö×Ö½Ú.Ä©×Ö½ÚÎª»»ÐÐ·û */
-extern uint16_t g_usart_rx_sta;                 /* ½ÓÊÕ×´Ì¬±ê¼Ç */
+extern uint8_t  g_usart_rx_buf[USART_REC_LEN];  /* æŽ¥æ”¶ç¼“å†²,æœ€å¤§USART_REC_LENä¸ªå­—èŠ‚.æœ«å­—èŠ‚ä¸ºæ¢è¡Œç¬¦ */
+extern uint16_t g_usart_rx_sta;                 /* æŽ¥æ”¶çŠ¶æ€æ ‡è®° */
 
-void usart_init(uint32_t pclk2, uint32_t bound);/* ´®¿Ú³õÊ¼»¯º¯Êý */
+void usart_init(uint32_t pclk2, uint32_t bound);/* ä¸²å£åˆå§‹åŒ–å‡½æ•° */
+void Serial_Init(uint32_t baud);               /* USART2 åˆå§‹åŒ–ï¼Œä½œä¸º Serial ä½¿ç”¨ */
+void Serial_SendByte(uint8_t byte);            /* USART2 å‘é€ 1 å­—èŠ‚ */
+void Serial_SendString(char *str);             /* USART2 å‘é€å­—ç¬¦ä¸² */
+void uart3_init(uint32_t baud);                /* USART3 åˆå§‹åŒ–ï¼Œæ›¿ä»£ç¤ºä¾‹ä¸­çš„ uart2 */
+void uart3_send_byte(uint8_t byte);            /* USART3 å‘é€ 1 å­—èŠ‚ */
+void uart3_send_string(char *str);             /* USART3 å‘é€å­—ç¬¦ä¸² */
 
 #endif  
 

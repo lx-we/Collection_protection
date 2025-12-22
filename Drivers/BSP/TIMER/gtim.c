@@ -109,6 +109,31 @@ void gtim_timx_pwm_chy_init(uint16_t arr, uint16_t psc)
 }
 
 /**
+ * @brief       TIM2 基础定时初始化（时基 + 更新中断）
+ * @param       period: 自动重装值 (ARR = period - 1)
+ * @param       prescaler: 预分频值 (PSC = prescaler - 1)
+ * @retval      无
+ */
+void timer2_init(uint16_t period, uint16_t prescaler)
+{
+    /* 时钟使能，内部时钟默认即可 */
+    RCC->APB1ENR |= 1 << 0;     /* TIM2 时钟 */
+
+    TIM2->CR1 = 0;              /* 复位控制寄存器，向上计数，CKD=DIV1 */
+    TIM2->PSC = prescaler - 1;  /* 预分频 */
+    TIM2->ARR = period - 1;     /* 自动重装 */
+    TIM2->EGR |= 1 << 0;        /* 产生更新事件，装载预分频和ARR */
+
+    TIM2->SR &= ~(1 << 0);      /* 清除更新中断标志 */
+    TIM2->DIER |= 1 << 0;       /* 允许更新中断 */
+
+    /* NVIC: 组2，抢占/响应优先级 3/3 */
+    sys_nvic_init(3, 3, TIM2_IRQn, 2);
+
+    TIM2->CR1 |= 1 << 0;        /* 使能计数器 */
+}
+
+/**
  * @brief       WS2812B PWM+DMA初始化函数 (TIM3_CH1, PA6)
  * @note        基于gtim_timx_pwm_chy_init()，但针对WS2812B的特殊需求进行调整：
  *              1. 禁用预装载 (OC1PE = 0)，使DMA更新CCR1时立即生效
@@ -165,22 +190,5 @@ void gtim_ws2812_pwm_dma_init(uint16_t arr, uint16_t psc)
     /* WS2812B特殊配置：先禁用定时器，等DMA配置好后再使能 */
     GTIM_WS2812_TIM->CR1 &= ~(1 << 0);    /* CEN = 0, 禁用定时器 */
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

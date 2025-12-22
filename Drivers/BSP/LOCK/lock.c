@@ -1,5 +1,5 @@
 #include "./BSP/LOCK/lock.h"
-
+uint8_t  Lock_status = 0;
 /**
  * @brief       初始化电磁锁的IO口, 并使能时钟
  * @param       无
@@ -19,13 +19,42 @@ void lock_init(void)
 }
 
 /**
+ * @brief       电磁锁上锁
+ * @param       无
+ * @retval      无
+ */
+void lock_lock(void)
+{
+    LOCK(LOCK_ON);
+    Lock_status = 1;
+}
+
+/**
+ * @brief       电磁锁解锁
+ * @param       无
+ * @retval      无
+ */
+void lock_unlock(void)
+{
+    LOCK(LOCK_OFF);
+    Lock_status = 0;
+}
+
+/**
  * @brief       设置电磁锁状态
  * @param       status: 0-上锁, 1-解锁
  * @retval      无
  */
 void lock_set(uint8_t status)
 {
-    LOCK(status);
+    if (status == 0)
+    {
+        lock_lock();
+    }
+    else
+    {
+        lock_unlock();
+    }
 }
 
 /**

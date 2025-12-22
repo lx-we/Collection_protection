@@ -1,196 +1,320 @@
 /**
  ****************************************************************************************************
- * @file        usart.c
- * @author      ’˝µ„‘≠◊”Õ≈∂”(ALIENTEK)
- * @version     V1.0
- * @date        2020-04-17
- * @brief       ¥Æø⁄≥ı ºªØ¥˙¬Î(“ª∞„ «¥Æø⁄1)£¨÷ß≥÷printf
- * @license     Copyright (c) 2020-2032, π„÷› ––«“ÌµÁ◊”ø∆ºº”–œﬁπ´Àæ
+ * @file        usmart_port.h
+ * @author      Ê≠£ÁÇπÂéüÂ≠êÂõ¢Èòü(ALIENTEK)
+ * @version     V3.5
+ * @date        2020-12-20
+ * @brief       USMART ‰∏≤Âè£Ë∞ÉËØïÁªÑ‰ª∂
+ *
+ *              USMARTÊòØÁî±ALIENTEKÂºÄÂèëÁöÑ‰∏Ä‰∏™ÁÅµÂ∑ßÁöÑ‰∏≤Âè£Ë∞ÉËØï‰∫í‰∫§ÁªÑ‰ª∂,ÈÄöËøá ÂÆÉ,‰Ω†ÂèØ‰ª•ÈÄöËøá‰∏≤Âè£Âä©ÊâãË∞ÉÁî®Á®ã
+ *              Â∫èÈáåÈù¢ÁöÑ‰ªª‰ΩïÂáΩÊï∞,Âπ∂ÊâßË°å.Âõ†Ê≠§,‰Ω†ÂèØ‰ª•ÈöèÊÑèÊõ¥ÊîπÂáΩÊï∞ÁöÑËæìÂÖ•ÂèÇÊï∞(ÊîØÊåÅÊï∞Â≠ó(10/16ËøõÂà∂,ÊîØÊåÅË¥üÊï∞)
+ *              „ÄÅÂ≠óÁ¨¶‰∏≤„ÄÅÂáΩÊï∞ÂÖ•Âè£Âú∞ÂùÄÁ≠â‰Ωú‰∏∫ÂèÇÊï∞),Âçï‰∏™ÂáΩÊï∞ÊúÄÂ§öÊîØÊåÅ10‰∏™ËæìÂÖ•ÂèÇÊï∞,Âπ∂ÊîØÊåÅÂáΩÊï∞Ëøî ÂõûÂÄºÊòæÁ§∫.
+ *              V2.1ÁâàÊú¨‰ª•ÂêéÊñ∞Â¢ûhexÂíådec‰∏§‰∏™Êåá‰ª§.‰ªñ‰ª¨ÂèØ‰ª•Áî®‰∫éËÆæÁΩÆÂáΩÊï∞ÂèÇÊï∞ÁöÑÊòæÁ§∫Ê†ºÂºè.‰πüÂèØ‰ª•Áî®‰∫éÊï∞ÊçÆÁöÑËøõ
+ *              Âà∂ËΩ¨Êç¢,‰æãÂ¶Ç:
+ *              ËæìÂÖ•"hex 100"  ‰ºöÂú®‰∏≤Âè£Ë∞ÉËØïÂä©Êâã‰∏äÁúãÂà∞ HEX 0X64.
+ *              ËæìÂÖ•"dec 0X64" ‰ºöÂú®‰∏≤Âè£Ë∞ÉËØïÂä©Êâã‰∏äÁúãÂà∞ DEC 100.
+ *   @note
+ *              USMARTËµÑÊ∫êÂç†Áî®ÊÉÖÂÜµ@MDK 3.80A@2.0ÁâàÊú¨Ôºö
+ *              FLASH:4K~KÂ≠óËäÇ(ÈÄöËøáUSMART_USE_HELPÂíåUSMART_USE_WRFUNSËÆæÁΩÆ)
+ *              SRAM:72Â≠óËäÇ(ÊúÄÂ∞ëÁöÑÊÉÖÂÜµ‰∏ã)
+ *              SRAMËÆ°ÁÆóÂÖ¨Âºè:   SRAM=PARM_LEN+72-4  ÂÖ∂‰∏≠PARM_LENÂøÖÈ°ªÂ§ß‰∫éÁ≠â‰∫é4.
+ *              Â∫îËØ•‰øùËØÅÂ†ÜÊ†à‰∏çÂ∞è‰∫é100‰∏™Â≠óËäÇ.
+ * @license     Copyright (c) 2020-2032, ÂπøÂ∑ûÂ∏ÇÊòüÁøºÁîµÂ≠êÁßëÊäÄÊúâÈôêÂÖ¨Âè∏
  ****************************************************************************************************
  * @attention
+ * 
+ * Âú®Á∫øËßÜÈ¢ë:www.yuanzige.com
+ * ÊäÄÊúØËÆ∫Âùõ:www.openedv.com
+ * ÂÖ¨Âè∏ÁΩëÂùÄ:www.alientek.com
+ * Ë¥≠‰π∞Âú∞ÂùÄ:openedv.taobao.com
  *
- *  µ—È∆ΩÃ®:’˝µ„‘≠◊” STM32F103ø™∑¢∞Â
- * ‘⁄œﬂ ”∆µ:www.yuanzige.com
- * ºº ı¬€Ã≥:www.openedv.com
- * π´ÀæÕ¯÷∑:www.alientek.com
- * π∫¬Úµÿ÷∑:openedv.taobao.com
+ * ‰øÆÊîπËØ¥Êòé 
+ * 
+ * V3.4‰πãÂâçÁâàÊú¨ËØ¶ÁªÜ‰øÆÊîπËØ¥ÊòéËßÅUSMARTÊñá‰ª∂Â§π‰∏ãÁöÑ:readme.txt
+ * 
+ * V3.4 20200324
+ * 1, Êñ∞Â¢ûusmart_port.cÂíåusmart_port.h,Áî®‰∫éÁÆ°ÁêÜUSMARTÁöÑÁßªÊ§ç,Êñπ‰æø‰øÆÊîπ
+ * 2, ‰øÆÊîπÂèòÈáèÂëΩÂêçÊñπÂºè‰∏∫: uint8_t, uint16_t, uint32_t
+ * 3, ‰øÆÊîπusmart_reset_runtime‰∏∫usmart_timx_reset_time
+ * 4, ‰øÆÊîπusmart_get_runtime‰∏∫usmart_timx_get_time
+ * 5, ‰øÆÊîπusmart_scanÂáΩÊï∞ÂÆûÁé∞ÊñπÂºè,ÊîπÊàêÁî±usmart_get_input_stringËé∑ÂèñÊï∞ÊçÆÊµÅ
+ * 6, ‰øÆÊîπprintfÂáΩÊï∞‰∏∫USMART_PRINTFÂÆèÂÆö‰πâ
+ * 7, ‰øÆÊîπÂÆöÊó∂Êâ´ÊèèÁõ∏ÂÖ≥ÂáΩÊï∞,ÊîπÁî®ÂÆèÂÆö‰πâÊñπÂºè,Êñπ‰æøÁßªÊ§ç
  *
- * –ﬁ∏ƒÀµ√˜
- * V1.0 20200417
- * µ⁄“ª¥Œ∑¢≤º
- *
+ * V3.5 20201220
+ * 1Ôºå‰øÆÊîπÈÉ®ÂàÜ‰ª£Á†Å‰ª•ÊîØÊåÅAC6ÁºñËØëÂô®
  ****************************************************************************************************
  */
  
+#ifndef __USMART_PORT_H
+#define __USMART_PORT_H
+
 #include "./SYSTEM/sys/sys.h"
 #include "./SYSTEM/usart/usart.h"
 
-/* »Áπ˚ π”√os,‘Ú∞¸¿®œ¬√ÊµƒÕ∑Œƒº˛º¥ø…. */
-#if SYS_SUPPORT_OS
-#include "os.h"   /* os  π”√ */
-#endif
 
 
 
 /******************************************************************************************/
-/* º”»Î“‘œ¬¥˙¬Î, ÷ß≥÷printf∫Ø ˝, ∂¯≤ª–Ë“™—°‘Òuse MicroLIB */
-
-#if 1
-
-#if (__ARMCC_VERSION >= 6010050)            /*  π”√AC6±‡“Î∆˜ ± */
-__asm(".global __use_no_semihosting\n\t");  /* …˘√˜≤ª π”√∞Î÷˜ª˙ƒ£ Ω */
-__asm(".global __ARM_use_no_argv \n\t");    /* AC6œ¬–Ë“™…˘√˜main∫Ø ˝Œ™Œﬁ≤Œ ˝∏Ò Ω£¨∑Ò‘Ú≤ø∑÷¿˝≥Ãø…ƒ‹≥ˆœ÷∞Î÷˜ª˙ƒ£ Ω */
-
-#else
-/*  π”√AC5±‡“Î∆˜ ±, “™‘⁄’‚¿Ô∂®“Â__FILE ∫Õ ≤ª π”√∞Î÷˜ª˙ƒ£ Ω */
-#pragma import(__use_no_semihosting)
-
-struct __FILE
-{
-    int handle;
-    /* Whatever you require here. If the only file you are using is */
-    /* standard output using printf() for debugging, no file handling */
-    /* is required. */
-};
-
-#endif
-
-/* ≤ª π”√∞Î÷˜ª˙ƒ£ Ω£¨÷¡…Ÿ–Ë“™÷ÿ∂®“Â_ttywrch\_sys_exit\_sys_command_string∫Ø ˝,“‘Õ¨ ±ºÊ»›AC6∫ÕAC5ƒ£ Ω */
-int _ttywrch(int ch)
-{
-    ch = ch;
-    return ch;
-}
-
-/* ∂®“Â_sys_exit()“‘±‹√‚ π”√∞Î÷˜ª˙ƒ£ Ω */
-void _sys_exit(int x)
-{
-    x = x;
-}
-
-char *_sys_command_string(char *cmd, int len)
-{
-    return NULL;
-}
+/* Áî®Êà∑ÈÖçÁΩÆÂèÇÊï∞ */
 
 
-/* FILE ‘⁄ stdio.h¿Ô√Ê∂®“Â. */
-FILE __stdout;
+#define MAX_FNAME_LEN           30      /* ÂáΩÊï∞ÂêçÊúÄÂ§ßÈïøÂ∫¶ÔºåÂ∫îËØ•ËÆæÁΩÆ‰∏∫‰∏çÂ∞è‰∫éÊúÄÈïøÂáΩÊï∞ÂêçÁöÑÈïøÂ∫¶„ÄÇ */
+#define MAX_PARM                10      /* ÊúÄÂ§ß‰∏∫10‰∏™ÂèÇÊï∞ ,‰øÆÊîπÊ≠§ÂèÇÊï∞,ÂøÖÈ°ª‰øÆÊîπusmart_exe‰∏é‰πãÂØπÂ∫î. */
+#define PARM_LEN                200     /* ÊâÄÊúâÂèÇÊï∞‰πãÂíåÁöÑÈïøÂ∫¶‰∏çË∂ÖËøáPARM_LEN‰∏™Â≠óËäÇ,Ê≥®ÊÑè‰∏≤Âè£Êé•Êî∂ÈÉ®ÂàÜË¶Å‰∏é‰πãÂØπÂ∫î(‰∏çÂ∞è‰∫éPARM_LEN) */
 
-/* MDKœ¬–Ë“™÷ÿ∂®“Âfputc∫Ø ˝, printf∫Ø ˝◊Ó÷’ª·Õ®π˝µ˜”√fputc ‰≥ˆ◊÷∑˚¥ÆµΩ¥Æø⁄ */
-int fputc(int ch, FILE *f)
-{
-    while ((USART_UX->SR & 0X40) == 0);     /* µ»¥˝…œ“ª∏ˆ◊÷∑˚∑¢ÀÕÕÍ≥… */
 
-    USART_UX->DR = (uint8_t)ch;             /* Ω´“™∑¢ÀÕµƒ◊÷∑˚ ch –¥»ÎµΩDRºƒ¥Ê∆˜ */
-    return ch;
-}
-#endif
+#define USMART_ENTIMX_SCAN      1       /* ‰ΩøÁî®TIMÁöÑÂÆöÊó∂‰∏≠Êñ≠Êù•Êâ´ÊèèSCANÂáΩÊï∞,Â¶ÇÊûúËÆæÁΩÆ‰∏∫0,ÈúÄË¶ÅËá™Â∑±ÂÆûÁé∞Èöî‰∏ÄÊÆµÊó∂Èó¥Êâ´Êèè‰∏ÄÊ¨°scanÂáΩÊï∞.
+                                         * Ê≥®ÊÑè:Â¶ÇÊûúË¶ÅÁî®runtimeÁªüËÆ°ÂäüËÉΩ,ÂøÖÈ°ªËÆæÁΩÆUSMART_ENTIMX_SCAN‰∏∫1!!!!
+                                         */
+
+#define USMART_USE_HELP         1       /* ‰ΩøÁî®Â∏ÆÂä©ÔºåËØ•ÂÄºËÆæ‰∏∫0ÔºåÂèØ‰ª•ËäÇÁúÅËøë700‰∏™Â≠óËäÇÔºå‰ΩÜÊòØÂ∞ÜÂØºËá¥Êó†Ê≥ïÊòæÁ§∫Â∏ÆÂä©‰ø°ÊÅØ„ÄÇ */
+#define USMART_USE_WRFUNS       1       /* ‰ΩøÁî®ËØªÂÜôÂáΩÊï∞,‰ΩøËÉΩËøôÈáå,ÂèØ‰ª•ËØªÂèñ‰ªª‰ΩïÂú∞ÂùÄÁöÑÂÄº,ËøòÂèØ‰ª•ÂÜôÂØÑÂ≠òÂô®ÁöÑÂÄº. */
+
+#define USMART_PRINTF           printf  /* ÂÆö‰πâprintfËæìÂá∫ */
+
 /******************************************************************************************/
+/* USMARTÂÆöÊó∂Âô® ÂÆö‰πâ */
 
+# if USMART_ENTIMX_SCAN == 1    /* ÂºÄÂêØ‰∫Ü‰ΩøËÉΩÂÆöÊó∂Âô®Êâ´Êèè,ÂàôÈúÄË¶ÅÂ¶Ç‰∏ãÂÆö‰πâ */
 
-#if USART_EN_RX     /* »Áπ˚ πƒ‹¡ÀΩ” ’ */
-
-/* Ω” ’ª∫≥Â, ◊Ó¥ÛUSART_REC_LEN∏ˆ◊÷Ω⁄. */
-uint8_t g_usart_rx_buf[USART_REC_LEN];
-
-/*  Ω” ’◊¥Ã¨
- *  bit15£¨      Ω” ’ÕÍ≥…±Í÷æ
- *  bit14£¨      Ω” ’µΩ0x0d
- *  bit13~0£¨    Ω” ’µΩµƒ”––ß◊÷Ω⁄ ˝ƒø
-*/
-uint16_t g_usart_rx_sta = 0;
-
-/**
- * @brief       ¥Æø⁄X÷–∂œ∑˛ŒÒ∫Ø ˝
- * @param       Œﬁ
- * @retval      Œﬁ
+/* TIMX ‰∏≠Êñ≠ÂÆö‰πâ 
+ * Áî®‰∫éÂÆöÊó∂Ë∞ÉÁî®usmart.scanÂáΩÊï∞Êâ´Êèè‰∏≤Âè£Êï∞ÊçÆ,Âπ∂ÊâßË°åÁõ∏ÂÖ≥Êìç‰Ωú
+ * Ê≥®ÊÑè: ÈÄöËøá‰øÆÊîπËøô4‰∏™ÂÆèÂÆö‰πâ,ÂèØ‰ª•ÊîØÊåÅTIM1~TIM8‰ªªÊÑè‰∏Ä‰∏™ÂÆöÊó∂Âô®.
  */
-void USART_UX_IRQHandler(void)
-{
-    uint8_t rxdata;
-#if SYS_SUPPORT_OS  /* »Áπ˚SYS_SUPPORT_OSŒ™’Ê£¨‘Ú–Ë“™÷ß≥÷OS. */
-    OSIntEnter();
+#define USMART_TIMX                     TIM4
+#define USMART_TIMX_IRQn                TIM4_IRQn
+#define USMART_TIMX_IRQHandler          TIM4_IRQHandler
+#define USMART_TIMX_CLK_ENABLE()        do{ RCC->APB1ENR |= 1 << 2; }while(0)   /* TIMX Êó∂Èíü‰ΩøËÉΩ */
+
 #endif
 
-    if (USART_UX->SR & (1 << 5))                /* Ω” ’µΩ ˝æ› */
-    {
-        rxdata = USART_UX->DR;
+/******************************************************************************************/
 
-        if ((g_usart_rx_sta & 0x8000) == 0)     /* Ω” ’Œ¥ÕÍ≥…? */
-        {
-            if (g_usart_rx_sta & 0x4000)        /* Ω” ’µΩ¡À0x0d? */
-            {
-                if (rxdata != 0x0a)             /* Ω” ’µΩ¡À0x0a? (±ÿ–Îœ»Ω” ’µΩµΩ0x0d,≤≈ºÏ≤È0x0a) */
-                {
-                    g_usart_rx_sta = 0;         /* Ω” ’¥ÌŒÛ, ÷ÿ–¬ø™ º */
+
+/* Â¶ÇÊûúÊ≤°ÊúâÂÆö‰πâuint32_t,ÂàôÂÆö‰πâ */
+#ifndef uint32_t
+typedef unsigned           char uint8_t;
+typedef unsigned short     int  uint16_t;
+typedef unsigned           int  uint32_t;
+#endif
+
+
+
+char * usmart_get_input_string(void);	/* Ëé∑ÂèñËæìÂÖ•Êï∞ÊçÆÊµÅ */
+void usmart_timx_reset_time(void);      /* Â§ç‰ΩçËøêË°åÊó∂Èó¥ */
+uint32_t usmart_timx_get_time(void);    /* Ëé∑ÂèñËøêË°åÊó∂Èó¥ */
+void usmart_timx_init(uint16_t tclk);   /* ÂàùÂßãÂåñÂÆöÊó∂Âô® */
+
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 }
                 else
                 {
-                    g_usart_rx_sta |= 0x8000;   /*  ’µΩ¡À0x0a,±Íº«Ω” ’ÕÍ≥…¡À */
-                }
-            }
-            else      /* ªπ√ª ’µΩ0x0d */
-            {
-                if (rxdata == 0x0d)
-                {
-                    g_usart_rx_sta |= 0x4000;   /* ±Íº«Ω” ’µΩ¡À 0x0d */
-                }
-                else
-                {
-                    g_usart_rx_buf[g_usart_rx_sta & 0X3FFF] = rxdata;   /* ¥Ê¥¢ ˝æ›µΩ g_usart_rx_buf */
+                    g_usart_rx_buf[g_usart_rx_sta & 0X3FFF] = rxdata;   /* Â≠òÂÇ®Êï∞ÊçÆÂà∞ g_usart_rx_buf */
                     g_usart_rx_sta++;
 
-                    if (g_usart_rx_sta > (USART_REC_LEN - 1))g_usart_rx_sta = 0;/* Ω” ’ ˝æ›“Á≥ˆ, ÷ÿ–¬ø™ ºΩ” ’ */
+                    if (g_usart_rx_sta > (USART_REC_LEN - 1))g_usart_rx_sta = 0;/* Êé•Êî∂Êï∞ÊçÆÊ∫¢Âá∫, ÈáçÊñ∞ÂºÄÂßãÊé•Êî∂ */
                 }
             }
         }
     }
 
-#if SYS_SUPPORT_OS  /* »Áπ˚SYS_SUPPORT_OSŒ™’Ê£¨‘Ú–Ë“™÷ß≥÷OS. */
+#if SYS_SUPPORT_OS  /* Â¶ÇÊûúSYS_SUPPORT_OS‰∏∫ÁúüÔºåÂàôÈúÄË¶ÅÊîØÊåÅOS. */
     OSIntExit();
 #endif
 }
 #endif
 
 /**
- * @brief       ¥Æø⁄X≥ı ºªØ∫Ø ˝
- * @param       sclk: ¥Æø⁄Xµƒ ±÷”‘¥∆µ¬ (µ•Œª: MHz)
- *              ¥Æø⁄1 µƒ ±÷”‘¥¿¥◊‘: PCLK2 = 72Mhz
- *              ¥Æø⁄2 - 5 µƒ ±÷”‘¥¿¥◊‘: PCLK1 = 36Mhz
- * @note        ◊¢“‚: ±ÿ–Î…Ë÷√’˝»∑µƒsclk, ∑Ò‘Ú¥Æø⁄≤®Ãÿ¬ æÕª·…Ë÷√“Ï≥£.
- * @param       baudrate: ≤®Ãÿ¬ , ∏˘æ›◊‘º∫–Ë“™…Ë÷√≤®Ãÿ¬ ÷µ
- * @retval      Œﬁ
+ * @brief       ‰∏≤Âè£XÂàùÂßãÂåñÂáΩÊï∞
+ * @param       sclk: ‰∏≤Âè£XÁöÑÊó∂ÈíüÊ∫êÈ¢ëÁéá(Âçï‰Ωç: MHz)
+ *              ‰∏≤Âè£1 ÁöÑÊó∂ÈíüÊ∫êÊù•Ëá™: PCLK2 = 72Mhz
+ *              ‰∏≤Âè£2 - 5 ÁöÑÊó∂ÈíüÊ∫êÊù•Ëá™: PCLK1 = 36Mhz
+ * @note        Ê≥®ÊÑè: ÂøÖÈ°ªËÆæÁΩÆÊ≠£Á°ÆÁöÑsclk, Âê¶Âàô‰∏≤Âè£Ê≥¢ÁâπÁéáÂ∞±‰ºöËÆæÁΩÆÂºÇÂ∏∏.
+ * @param       baudrate: Ê≥¢ÁâπÁéá, Ê†πÊçÆËá™Â∑±ÈúÄË¶ÅËÆæÁΩÆÊ≥¢ÁâπÁéáÂÄº
+ * @retval      Êó†
  */
 void usart_init(uint32_t sclk, uint32_t baudrate)
 {
     uint32_t temp;
-    /* IO º∞  ±÷”≈‰÷√ */
-    USART_TX_GPIO_CLK_ENABLE(); /*  πƒ‹¥Æø⁄TXΩ≈ ±÷” */
-    USART_RX_GPIO_CLK_ENABLE(); /*  πƒ‹¥Æø⁄RXΩ≈ ±÷” */
-    USART_UX_CLK_ENABLE();      /*  πƒ‹¥Æø⁄ ±÷” */
+    /* IO Âèä Êó∂ÈíüÈÖçÁΩÆ */
+    USART_TX_GPIO_CLK_ENABLE(); /* ‰ΩøËÉΩ‰∏≤Âè£TXËÑöÊó∂Èíü */
+    USART_RX_GPIO_CLK_ENABLE(); /* ‰ΩøËÉΩ‰∏≤Âè£RXËÑöÊó∂Èíü */
+    USART_UX_CLK_ENABLE();      /* ‰ΩøËÉΩ‰∏≤Âè£Êó∂Èíü */
 
     sys_gpio_set(USART_TX_GPIO_PORT, USART_TX_GPIO_PIN,
-                 SYS_GPIO_MODE_AF, SYS_GPIO_OTYPE_PP, SYS_GPIO_SPEED_HIGH, SYS_GPIO_PUPD_PU);   /* ¥Æø⁄TXΩ≈ ƒ£ Ω…Ë÷√ */
+                 SYS_GPIO_MODE_AF, SYS_GPIO_OTYPE_PP, SYS_GPIO_SPEED_HIGH, SYS_GPIO_PUPD_PU);   /* ‰∏≤Âè£TXËÑö Ê®°ÂºèËÆæÁΩÆ */
 
     sys_gpio_set(USART_RX_GPIO_PORT, USART_RX_GPIO_PIN,
-                 SYS_GPIO_MODE_IN, SYS_GPIO_OTYPE_PP, SYS_GPIO_SPEED_HIGH, SYS_GPIO_PUPD_PU);   /* ¥Æø⁄RXΩ≈ ±ÿ–Î…Ë÷√≥… ‰»Îƒ£ Ω */
+                 SYS_GPIO_MODE_IN, SYS_GPIO_OTYPE_PP, SYS_GPIO_SPEED_HIGH, SYS_GPIO_PUPD_PU);   /* ‰∏≤Âè£RXËÑö ÂøÖÈ°ªËÆæÁΩÆÊàêËæìÂÖ•Ê®°Âºè */
 
-    temp = (sclk * 1000000 + baudrate / 2) / baudrate;  /* µ√µΩBRR, ≤…”√Àƒ…·ŒÂ»Îº∆À„ */
-    /* ≤®Ãÿ¬ …Ë÷√ */
-    USART_UX->BRR = temp;       /* ≤®Ãÿ¬ …Ë÷√ */
-    USART_UX->CR1 = 0;          /* «Â¡„CR1ºƒ¥Ê∆˜ */
-    USART_UX->CR1 |= 0 << 12;   /* M = 0, 1∏ˆ∆ ºŒª, 8∏ˆ ˝æ›Œª, n∏ˆÕ£÷πŒª(”…USART_CR2 STOP[1:0]÷∏∂®, ƒ¨»œ «0, ±Ì æ1∏ˆÕ£÷πŒª) */
-    USART_UX->CR1 |= 1 << 3;    /* TE = 1, ¥Æø⁄∑¢ÀÕ πƒ‹ */
-#if USART_EN_RX  /* »Áπ˚ πƒ‹¡ÀΩ” ’ */
-    /*  πƒ‹Ω” ’÷–∂œ */
-    USART_UX->CR1 |= 1 << 2;    /* RE = 1, ¥Æø⁄Ω” ’ πƒ‹ */
-    USART_UX->CR1 |= 1 << 5;    /* RXNEIE = 1, Ω” ’ª∫≥Â«¯∑«ø’÷–∂œ πƒ‹ */
-    sys_nvic_init(3, 3, USART_UX_IRQn, 2); /* ◊È2£¨◊ÓµÕ”≈œ»º∂ */
+    temp = (sclk * 1000000 + baudrate / 2) / baudrate;  /* ÂæóÂà∞BRR, ÈááÁî®ÂõõËàç‰∫îÂÖ•ËÆ°ÁÆó */
+    /* Ê≥¢ÁâπÁéáËÆæÁΩÆ */
+    USART_UX->BRR = temp;       /* Ê≥¢ÁâπÁéáËÆæÁΩÆ */
+    USART_UX->CR1 = 0;          /* Ê∏ÖÈõ∂CR1ÂØÑÂ≠òÂô® */
+    USART_UX->CR1 |= 0 << 12;   /* M = 0, 1‰∏™Ëµ∑Âßã‰Ωç, 8‰∏™Êï∞ÊçÆ‰Ωç, n‰∏™ÂÅúÊ≠¢‰Ωç(Áî±USART_CR2 STOP[1:0]ÊåáÂÆö, ÈªòËÆ§ÊòØ0, Ë°®Á§∫1‰∏™ÂÅúÊ≠¢‰Ωç) */
+    USART_UX->CR1 |= 1 << 3;    /* TE = 1, ‰∏≤Âè£ÂèëÈÄÅ‰ΩøËÉΩ */
+#if USART_EN_RX  /* Â¶ÇÊûú‰ΩøËÉΩ‰∫ÜÊé•Êî∂ */
+    /* ‰ΩøËÉΩÊé•Êî∂‰∏≠Êñ≠ */
+    USART_UX->CR1 |= 1 << 2;    /* RE = 1, ‰∏≤Âè£Êé•Êî∂‰ΩøËÉΩ */
+    USART_UX->CR1 |= 1 << 5;    /* RXNEIE = 1, Êé•Êî∂ÁºìÂÜ≤Âå∫ÈùûÁ©∫‰∏≠Êñ≠‰ΩøËÉΩ */
+    sys_nvic_init(3, 3, USART_UX_IRQn, 2); /* ÁªÑ2ÔºåÊúÄ‰Ωé‰ºòÂÖàÁ∫ß */
 #endif
-    USART_UX->CR1 |= 1 << 13;   /* UE = 1, ¥Æø⁄ πƒ‹ */
+    USART_UX->CR1 |= 1 << 13;   /* UE = 1, ‰∏≤Âè£‰ΩøËÉΩ */
 }
 
+/**
+ * @brief   USART2 ÂàùÂßãÂåñÔºàSerial Áî®Ôºâ
+ * @param   baud: Ê≥¢ÁâπÁéá
+ */
+void Serial_Init(uint32_t baud)
+{
+    GPIO_InitTypeDef  gpio_init;
+    USART_InitTypeDef usart_init_struct;
+    NVIC_InitTypeDef  nvic_init;
+
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+
+    /* PA2 -> TX , PA3 -> RX */
+    gpio_init.GPIO_Pin   = GPIO_Pin_2;
+    gpio_init.GPIO_Mode  = GPIO_Mode_AF_PP;
+    gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIOA, &gpio_init);
+
+    gpio_init.GPIO_Pin  = GPIO_Pin_3;
+    gpio_init.GPIO_Mode = GPIO_Mode_IPU;
+    GPIO_Init(GPIOA, &gpio_init);
+
+    usart_init_struct.USART_BaudRate            = baud;
+    usart_init_struct.USART_WordLength          = USART_WordLength_8b;
+    usart_init_struct.USART_StopBits            = USART_StopBits_1;
+    usart_init_struct.USART_Parity              = USART_Parity_No;
+    usart_init_struct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    usart_init_struct.USART_Mode                = USART_Mode_Tx | USART_Mode_Rx;
+    USART_Init(USART2, &usart_init_struct);
+
+    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+    nvic_init.NVIC_IRQChannel = USART2_IRQn;
+    nvic_init.NVIC_IRQChannelPreemptionPriority = 0;
+    nvic_init.NVIC_IRQChannelSubPriority        = 0;
+    nvic_init.NVIC_IRQChannelCmd                = ENABLE;
+    NVIC_Init(&nvic_init);
+
+    USART_Cmd(USART2, ENABLE);
+}
+
+/**
+ * @brief   USART2 ÂèëÈÄÅ 1 Â≠óËäÇ
+ */
+void Serial_SendByte(uint8_t byte)
+{
+    USART_SendData(USART2, byte);
+    while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);
+}
+
+/**
+ * @brief   USART2 ÂèëÈÄÅÂ≠óÁ¨¶‰∏≤
+ */
+void Serial_SendString(char *str)
+{
+    while (*str != '\0')
+    {
+        Serial_SendByte(*str++);
+    }
+}
+
+/**
+ * @brief   USART3 ÂàùÂßãÂåñÔºàÁ§∫‰æã‰∏≠ÁöÑ uart2 Êîπ‰∏∫‰ΩøÁî® USART3Ôºâ
+ * @param   baud: Ê≥¢ÁâπÁéá
+ */
+void uart3_init(uint32_t baud)
+{
+    GPIO_InitTypeDef  gpio_init;
+    USART_InitTypeDef usart_init_struct;
+    NVIC_InitTypeDef  nvic_init;
+
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+
+    /* PB10 -> TX , PB11 -> RX */
+    gpio_init.GPIO_Pin   = GPIO_Pin_10;
+    gpio_init.GPIO_Mode  = GPIO_Mode_AF_PP;
+    gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIOB, &gpio_init);
+
+    gpio_init.GPIO_Pin  = GPIO_Pin_11;
+    gpio_init.GPIO_Mode = GPIO_Mode_IPU;
+    GPIO_Init(GPIOB, &gpio_init);
+
+    usart_init_struct.USART_BaudRate            = baud;
+    usart_init_struct.USART_WordLength          = USART_WordLength_8b;
+    usart_init_struct.USART_StopBits            = USART_StopBits_1;
+    usart_init_struct.USART_Parity              = USART_Parity_No;
+    usart_init_struct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    usart_init_struct.USART_Mode                = USART_Mode_Tx | USART_Mode_Rx;
+    USART_Init(USART3, &usart_init_struct);
+
+    USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
+
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+    nvic_init.NVIC_IRQChannel = USART3_IRQn;
+    nvic_init.NVIC_IRQChannelPreemptionPriority = 0;
+    nvic_init.NVIC_IRQChannelSubPriority        = 0;
+    nvic_init.NVIC_IRQChannelCmd                = ENABLE;
+    NVIC_Init(&nvic_init);
+
+    USART_Cmd(USART3, ENABLE);
+}
+
+/**
+ * @brief   USART3 ÂèëÈÄÅ 1 Â≠óËäÇ
+ */
+void uart3_send_byte(uint8_t byte)
+{
+    USART_SendData(USART3, byte);
+    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET);
+}
+
+/**
+ * @brief   USART3 ÂèëÈÄÅÂ≠óÁ¨¶‰∏≤
+ */
+void uart3_send_string(char *str)
+{
+    while (*str != '\0')
+    {
+        uart3_send_byte(*str++);
+    }
+}
 
 
 

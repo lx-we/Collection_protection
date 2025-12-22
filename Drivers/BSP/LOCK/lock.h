@@ -10,6 +10,7 @@
 #define LOCK_GPIO_PIN                   SYS_GPIO_PIN3
 #define LOCK_GPIO_CLK_ENABLE()          do{ RCC->APB2ENR |= 1 << 2; }while(0)   /* PA时钟使能 */
 
+extern uint8_t  Lock_status;
 /******************************************************************************************/
 
 /* 电磁锁端口操作定义 */
@@ -35,6 +36,8 @@
 
 
 void lock_init(void);          /* 初始化电磁锁 */
+void lock_lock(void);          /* 上锁 */
+void lock_unlock(void);        /* 解锁 */
 void lock_set(uint8_t status); /* 设置电磁锁状态: 0-上锁, 1-解锁 */
 uint8_t lock_get(void);        /* 获取电磁锁状态: 返回值 0-上锁, 1-解锁 */
 
