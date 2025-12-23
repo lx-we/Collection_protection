@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "dht11.h": "c",
-        "gtim.h": "c",
-        "driver_wireless.h": "c"
-    }
-}
