@@ -70,12 +70,10 @@ void EXTI9_5_IRQHandler(void)
         /* 读取当前引脚状态判断是上升沿还是下降沿 */
         if (SW_DO_IN == 1)  /* 上升沿:检测到震动 */
         {
-            printf("SW-18010P: Vibration detected! (PC6=HIGH, Rising Edge)\r\n");
             Vibration_detected_status = 1;
         }
         else  /* 下降沿:震动消失 */
         {
-            printf("SW-18010P: No vibration (PC6=LOW, Falling Edge)\r\n");
             Vibration_detected_status = 0;
         }
     }

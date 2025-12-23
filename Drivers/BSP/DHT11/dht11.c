@@ -246,21 +246,13 @@ void dht11_timer_init(void)
  */
 void TIM6_DAC_IRQHandler(void)
 {
-    /* 妫€鏌?IM6鏇存柊涓?柇鏍囧織浣? */
-    if (TIM6->SR & 0x01)  /* 妫€鏌ユ洿鏂颁腑鏂?爣蹇椾綅 */
+    /* 检查TIM6更新中断标志位 */
+    if (TIM6->SR & 0x01)  /* 检查更新中断标志位 */
     {
-        TIM6->SR &= ~(1 << 0);  /* 娓呴櫎鏇存柊涓?柇鏍囧織浣? */
+        TIM6->SR &= ~(1 << 0);  /* 清除更新中断标志位 */
         
-        /* 璇诲彇DHT11鏁版嵁 */
-        uint8_t temperature, humidity;
-        if (dht11_read_data(&temperature, &humidity) == 0)
-        {
-            printf("Temperature: %d C, Humidity: %d %%\r\n", temperature, humidity);
-        }
-        else
-        {
-            printf("DHT11 Read Error\r\n");
-        }
+        /* 读取DHT11数据并更新到全局结构体 */
+        dht11_get_data(&dht11_data);
     }
 }
 

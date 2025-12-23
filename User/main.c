@@ -25,10 +25,11 @@ int main(void)
     uint8_t j = 0;
     uint32_t rgb_buf[LED_NUM];          /* 各灯珠RGB颜色缓冲区 */
     uint8_t led_state = 0;              /* LED状态：0=关闭，1=开启 */
-    timer2_init(100,720);
+    
     sys_stm32_clock_init(9);    /* 系统时钟初始化, 72Mhz */
     delay_init(72);             /* 延时初始化 */
     usart_init(72, 115200);     /* 串口初始化波特率115200 (USART2使用APB1时钟源,最大36MHz) */
+    timer2_init(100,720);       /* 放在时钟配置之后，确保 TIM2 配置生效 */
     wireless_init();                //无线模块初始化并连接onenet mqtt服务器
     led_init();
     key_init();
@@ -55,6 +56,10 @@ int main(void)
         rgb_buf[j] = GRB888_BLACK;  /* 黑色（关闭） */
     }
     ws2812_display(rgb_buf, LED_NUM);
+
+    /* 先手动上报一次，确认 MQTT 上报流程通畅 */
+    wireless_onenet_data_handler();    /* 更新 OneNET 属性缓存 */
+    wireless_publish_data();           /* 立即上报一次到 OneNET */
     
     while (1)
     {

@@ -149,7 +149,8 @@ void Serial_Init(uint32_t baud)
     sys_gpio_set(GPIOA, SYS_GPIO_PIN2, SYS_GPIO_MODE_AF, SYS_GPIO_OTYPE_PP, SYS_GPIO_SPEED_HIGH, SYS_GPIO_PUPD_PU);
     sys_gpio_set(GPIOA, SYS_GPIO_PIN3, SYS_GPIO_MODE_IN, SYS_GPIO_OTYPE_PP, SYS_GPIO_SPEED_HIGH, SYS_GPIO_PUPD_PU);
 
-    uint32_t brr = (72000000U + baud / 2) / baud; /* 假设APB1定时器时钟72MHz */
+    /* APB1 = 36MHz → USART2 时钟 = 36MHz */
+    uint32_t brr = (36000000U + baud / 2) / baud;
     USART2->BRR = brr;
 
     USART2->CR1 = 0;
@@ -183,7 +184,8 @@ void uart3_init(uint32_t baud)
     sys_gpio_set(GPIOB, SYS_GPIO_PIN10, SYS_GPIO_MODE_AF, SYS_GPIO_OTYPE_PP, SYS_GPIO_SPEED_HIGH, SYS_GPIO_PUPD_PU);
     sys_gpio_set(GPIOB, SYS_GPIO_PIN11, SYS_GPIO_MODE_IN, SYS_GPIO_OTYPE_PP, SYS_GPIO_SPEED_HIGH, SYS_GPIO_PUPD_PU);
 
-    uint32_t brr = (72000000U + baud / 2) / baud; /* 假设APB1定时器时钟72MHz */
+    /* APB1 = 36MHz → USART3 时钟 = 36MHz */
+    uint32_t brr = (36000000U + baud / 2) / baud;
     USART3->BRR = brr;
 
     USART3->CR1 = 0;
@@ -204,5 +206,24 @@ void uart3_send_byte(uint8_t byte)
 void uart3_send_string(char *str)
 {
     while (*str != '\0') { uart3_send_byte(*str++); }
+}
+
+/**
+ * @brief   USART3 中断服务函数
+ * @param   无
+ * @retval  无
+ */
+void USART3_IRQHandler(void)
+{
+    uint8_t rxdata;
+    
+    if (USART3->SR & (1 << 5))  /* 接收到数据 (RXNE) */
+    {
+        rxdata = USART3->DR;  /* 读取接收到的数据 */
+        
+        /* 调用无线模块接收回调函数 */
+        extern void wireless_receive_callback(uint8_t byte);
+        wireless_receive_callback(rxdata);
+    }
 }
 

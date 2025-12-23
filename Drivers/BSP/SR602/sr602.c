@@ -67,12 +67,10 @@ void TIM1_UP_IRQHandler(void)
         {
             if (sr602_status == 1)  /* 检测到人体 */
             {
-                printf("SR602: Human detected! (PC7=HIGH)\r\n");
                 human_detected_status = 1;
             }
             else  /* 人体离开 */
             {
-                printf("SR602: No human detected (PC7=LOW)\r\n");
                 human_detected_status = 0;
             }
             sr602_last_status = sr602_status;  /* 更新状态 */
