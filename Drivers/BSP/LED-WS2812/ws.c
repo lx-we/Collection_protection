@@ -15,6 +15,7 @@
 
 /* PWM发送缓冲区 (每个LED需要24个16位数据,总共支持WS2812_MAX_LEDS个LED) */
 static uint16_t ws2812_pwm_buffer[WS2812_MAX_LEDS * 24];
+uint8_t RBGLED_status = 0;
 
 /**
  * @brief       将24位GRB888颜色值编码为PWM格式
@@ -356,6 +357,32 @@ uint32_t ws2812_color_change_bright(uint32_t rgb, float k)
 }
 
 /**
+ * @brief       设置所有LED的亮度并显示
+ * @param       color_buf: 颜色缓冲区指针
+ * @param       len: LED数量
+ * @param       brightness: 亮度系数 (0.0-1.0)
+ * @retval      无
+ */
+void ws2812_set_brightness(uint32_t *color_buf, uint16_t len, float brightness)
+{
+    uint16_t i;
+    uint32_t adjusted_buf[WS2812_MAX_LEDS];
+    
+    /* 限制亮度范围 */
+    if (brightness < 0.0f) brightness = 0.0f;
+    if (brightness > 1.0f) brightness = 1.0f;
+    
+    /* 对每个LED应用亮度调整 */
+    for (i = 0; i < len && i < WS2812_MAX_LEDS; i++)
+    {
+        adjusted_buf[i] = ws2812_color_change_bright(color_buf[i], brightness);
+    }
+    
+    /* 显示调整后的颜色 */
+    ws2812_display(adjusted_buf, len);
+}
+
+/**
  * @brief       WS2812B不显示颜色，复位状态（关灯）
  * @param       无
  * @retval      无
@@ -391,6 +418,7 @@ void ws2812_set_warm_yellow(uint8_t percent)
     {
         color_buf[i] = GRB888_WARM_YELLOW;
     }
+    RBGLED_status = percent;
     
     /* 应用亮度调整并显示 */
     ws2812_set_brightness(color_buf, LED_NUM, brightness);

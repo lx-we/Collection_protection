@@ -470,25 +470,18 @@ void wireless_receiver_command_extract(char *jsonData)
 	
 	cJSON *cmd_item = NULL;
 	
-	cmd_item  = cJSON_GetObjectItem(params_item, ChuangLian_Control.name);
+	cmd_item  = cJSON_GetObjectItem(params_item, Lock_Control.name);
 	if (cmd_item != NULL && cJSON_IsBool(cmd_item)) 
 	{
-		ChuangLian_Control.value.bool_value = (uint8_t)cmd_item->valueint;
-		wireless_log_print("ChuangLian_Control.value:%d\r\n",ChuangLian_Control.value.bool_value);
+		Lock_Control.value.bool_value = (uint8_t)cmd_item->valueint;
+		wireless_log_print("Lock_Control.value:%d\r\n",Lock_Control.value.bool_value);
 	}
 
-	cmd_item  = cJSON_GetObjectItem(params_item, JiaShiQi_Control.name);
-	if (cmd_item != NULL && cJSON_IsBool(cmd_item)) 
-	{
-		JiaShiQi_Control.value.bool_value = (uint8_t)cmd_item->valueint;
-		wireless_log_print("JiaShiQi_Control.value:%u\r\n",JiaShiQi_Control.value.bool_value);
-	}
-
-	cmd_item  = cJSON_GetObjectItem(params_item, DiaoDeng_Control.name);
+	cmd_item  = cJSON_GetObjectItem(params_item, RBGLED.name);
 	if (cmd_item != NULL && cJSON_IsNumber(cmd_item)) 
 	{
-		DiaoDeng_Control.value.int_value = (uint8_t)cmd_item->valueint;
-		wireless_log_print("DiaoDeng_Control.value:%u\r\n",DiaoDeng_Control.value.int_value);
+		RBGLED.value.int_value = (uint8_t)cmd_item->valueint;
+		wireless_log_print("RBGLED.value:%u\r\n",RBGLED.value.int_value);
 	}
 	
 	cJSON_Delete(json_obj);   //释放内存

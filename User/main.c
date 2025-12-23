@@ -37,21 +37,17 @@ int main(void)
     sw_init();                    /* 初始化SW-18010P震动传感器 */
     ws2812_init();                /* 初始化WS2812B RGB灯带 (PWM+DMA) */
 
-    printf("WS2812B Init OK\r\n");
 
-    printf("STM32 DHT11 TEST\r\n");
 
     while (dht11_init())        /* DHT11初始化 */
     {
         printf("DHT11 Error\r\n");
         delay_ms(200);
     }
-
-    printf("DHT11 OK\r\n");
     
     dht11_timer_init();                 /* 初始化TIM6定时器中断,用于定时读取DHT11数据 */
 
-    printf("Press KEY1 to turn on/off warm yellow LED\r\n");
+
     
     /* 初始化时关闭所有LED */
     for(j = 0; j < LED_NUM; j++)
@@ -137,13 +133,12 @@ int main(void)
      static uint16_t wireless_send_timer = 0;
      static uint16_t sensor_read_timer = 0;
      static uint16_t key_scan_timer = 0;
-     if (TIM_GetITStatus(TIM2, TIM_IT_Update) == SET)
+     if (TIM2->SR & (1 << 0))  /* 检查更新中断标志位 */
      {
          if(wireless_send_timer++ == WIRELESS_SEND_TIME) {wireless_send_timer = 0;wireless_send_flag = 1;}
          if(sensor_read_timer++ == SENSOR_READ_TIME) {sensor_read_timer = 0;sensor_read_flag = 1;}
-         if(key_scan_timer++ == KEY_SCAN_TIME){key_scan_timer = 0; key->callback();}
-         key->get_tick(1);
-         TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+         if(key_scan_timer++ == KEY_SCAN_TIME){key_scan_timer = 0; key_scan(1);}
+         TIM2->SR &= ~(1 << 0);  /* 清除更新中断标志位 */
      }
  }
  

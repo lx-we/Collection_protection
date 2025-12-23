@@ -31,6 +31,7 @@
 
 #include "./SYSTEM/sys/sys.h"
 
+
 /******************************************************************************************/
 /* WS2812B PWM配置定义 */
 /* 注意：定时器相关定义在 gtim.h 中，这里只保留DMA相关定义 */
@@ -46,6 +47,9 @@
 #define WS2812_DMA                    DMA1
 #define WS2812_DMA_CLK_ENABLE()      do{ RCC->AHBENR |= 1 << 0; }while(0)       /* DMA1时钟使能 */
 #define WS2812_DMA_CHANNEL            DMA1_Channel6                              /* TIM3_CH1使用DMA1_Channel6 */
+
+
+extern uint8_t RBGLED_status;
 
 /******************************************************************************************/
 /* RGBLED的数据高低电平逻辑定义 */

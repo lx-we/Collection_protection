@@ -26,13 +26,21 @@
 #define __DHT11_H 
 
 #include "./SYSTEM/sys/sys.h"
+#include <stdint.h>
 
+typedef struct
+{
+	float temp;
+	uint8_t humi;
+}DHT11_TypeDef;
 
 /******************************************************************************************/
 /* DHT11 引脚 定义 */
 #define DHT11_DQ_GPIO_PORT                  GPIOA
 #define DHT11_DQ_GPIO_PIN                   SYS_GPIO_PIN1
 #define DHT11_DQ_GPIO_CLK_ENABLE()          do{ RCC->APB2ENR |= 1 << 2; }while(0)           /* PA口时钟使能 */
+
+extern DHT11_TypeDef dht11_data;
 
 /******************************************************************************************/
 /* IO操作函数 */
@@ -44,6 +52,7 @@
 uint8_t dht11_init(void);                               /* 初始化DHT11 */
 uint8_t dht11_check(void);                              /* 检测是否存在DHT11 */
 uint8_t dht11_read_data(uint8_t *temp,uint8_t *humi);   /* 读取温湿度 */
+uint8_t dht11_get_data(DHT11_TypeDef *data);            /* 读取温湿度并更新到结构体 */
 void dht11_timer_init(void);                            /* 初始化TIM6定时器中断,用于定时读取DHT11 */
 
 #endif

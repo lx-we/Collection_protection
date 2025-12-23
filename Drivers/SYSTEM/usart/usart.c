@@ -163,8 +163,8 @@ void Serial_Init(uint32_t baud)
 
 void Serial_SendByte(uint8_t byte)
 {
-    USART_SendData(USART2, byte);
-    while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);
+    while ((USART2->SR & (1 << 7)) == 0);  /* 等待发送数据寄存器空 (TXE) */
+    USART2->DR = byte;  /* 写入数据到数据寄存器 */
 }
 
 void Serial_SendString(char *str)
@@ -197,8 +197,8 @@ void uart3_init(uint32_t baud)
 
 void uart3_send_byte(uint8_t byte)
 {
-    USART_SendData(USART3, byte);
-    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET);
+    while ((USART3->SR & (1 << 7)) == 0);  /* 等待发送数据寄存器空 (TXE) */
+    USART3->DR = byte;  /* 写入数据到数据寄存器 */
 }
 
 void uart3_send_string(char *str)

@@ -174,6 +174,27 @@ uint8_t dht11_read_data(uint8_t *temp, uint8_t *humi)
 }
 
 /**
+ * @brief       读取DHT11数据并更新到结构体
+ * @param       data: DHT11_TypeDef结构体指针
+ * @retval      0, 正常
+ *              1, 失败
+ */
+uint8_t dht11_get_data(DHT11_TypeDef *data)
+{
+    uint8_t temp, humi;
+    if (dht11_read_data(&temp, &humi) == 0)
+    {
+        if (data != NULL)
+        {
+            data->temp = (float)temp;
+            data->humi = humi;
+        }
+        return 0;
+    }
+    return 1;
+}
+
+/**
  * @brief       鍒濆?鍖朌HT11鐨処O鍙? DQ 鍚屾椂妫€娴婦HT11鐨勫瓨鍦?
  * @param       鏃?
  * @retval      0, 姝ｅ父
