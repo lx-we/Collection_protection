@@ -20,9 +20,9 @@ Page({
    * @注意：定义与OneNET平台交互所需的配置信息，包括鉴权信息、产品ID、设备名称等。
    */
   config: {
-    auth_info: "version=2022-05-01&res=userid%2F341108&et=2053320694&method=sha1&sign=G95etf%2BxFvKj4nzMfmbYsl1oV%2Bo%3D", // 鉴权信息
-    product_id: "eueUyeRMT0", // 产品ID
-    device_name: "device-001", // 设备名称
+    auth_info: "version=2022-05-01&res=userid%2F479390&et=2054270651&method=sha1&sign=eOkDFwjGXcOhoXPFa8t%2BKVR%2BHHU%3D", // 鉴权信息
+    product_id: "VQmf8177GX", // 产品ID
+    device_name: "RCT6_mini", // 设备名称
     api_base_url: "https://iot-api.heclouds.com", // OneNET API基础URL
     start_time: 0, // 开始时间，用于请求数据时间戳区间
     end_time: 0, // 结束时间，用于请求数据时间戳区间
