@@ -68,6 +68,8 @@ void uart4_init(uint32_t baud);                /* UART4 初始化（仅接收功
 uint8_t uart4_get_rx_flag(void);               /* 获取 UART4 接收标志位 */
 uint8_t uart4_get_rx_data(void);               /* 获取 UART4 接收数据 */
 void uart4_clear_rx_flag(void);                /* 清除 UART4 接收标志位 */
+extern uint8_t uart4_rx_buffer[64];            /* UART4 接收缓冲区（在中断中直接保存） */
+extern volatile uint8_t uart4_rx_index;        /* UART4 接收缓冲区索引 */
 
 #endif  
 

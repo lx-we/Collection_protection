@@ -23,9 +23,9 @@ uint8_t sensor_read_flag = 0;		//读取传感器数据标志位
 uint8_t dht11_available = 0;         //DHT11是否可用标志位
 uint8_t wireless_available = 0;      //无线模块是否可用标志位
 
-/* UART4 接收缓冲区 */
-uint8_t uart4_rx_buffer[UART4_RX_BUF_MAX] = {0};
-uint8_t uart4_rx_index = 0;
+/* UART4 接收缓冲区（现在在usart.c中定义，这里只声明外部变量） */
+extern uint8_t uart4_rx_buffer[UART4_RX_BUF_MAX];
+extern volatile uint8_t uart4_rx_index;
 
 /**
  * @brief   字符串比较函数（替代strcmp）
@@ -198,32 +198,25 @@ int main(void)
 		{
 			uint8_t rx_byte = uart4_get_rx_data();
 			uart4_clear_rx_flag();
-			/* 调试信息已在中断中打印，这里不再重复打印 */
 			
 			/* 接收到换行符或回车符 = 指令完整 */
 			if (rx_byte == '\n' || rx_byte == '\r')
 			{
-				if (uart4_rx_index > 0)  /* 确保有数据 */
+				if (uart4_rx_index > 0)
 				{
-					uart4_rx_buffer[uart4_rx_index] = '\0';
+					uart4_rx_buffer[uart4_rx_index - 1] = '\0';
 					
-					/* 字符串指令处理 */
+					/* 处理命令 */
 					if (StringCompare(uart4_rx_buffer, (uint8_t*)"1") == 1 || 
 					    StringCompare(uart4_rx_buffer, (uint8_t*)"ON") == 1 ||
 					    StringCompare(uart4_rx_buffer, (uint8_t*)"DETECTED") == 1)
 					{
 						LED0(0);  /* LED0 亮 */
-						printf("UART4: LED0 ON (received: %s)\r\n", uart4_rx_buffer);
 					}
 					else if (StringCompare(uart4_rx_buffer, (uint8_t*)"0") == 1 || 
 					         StringCompare(uart4_rx_buffer, (uint8_t*)"OFF") == 1)
 					{
 						LED0(1);  /* LED0 灭 */
-						printf("UART4: LED0 OFF (received: %s)\r\n", uart4_rx_buffer);
-					}
-					else
-					{
-						printf("UART4: Unknown command: %s\r\n", uart4_rx_buffer);
 					}
 				}
 				
@@ -232,23 +225,6 @@ int main(void)
 				for (j = 0; j < UART4_RX_BUF_MAX; j++)
 				{
 					uart4_rx_buffer[j] = 0;
-				}
-			}
-			else
-			{
-				/* 保存接收到的字符 */
-				uart4_rx_buffer[uart4_rx_index] = rx_byte;
-				uart4_rx_index++;
-				
-				/* 缓冲区溢出保护 */
-				if (uart4_rx_index >= UART4_RX_BUF_MAX - 1)
-				{
-					uart4_rx_index = 0;
-					for (j = 0; j < UART4_RX_BUF_MAX; j++)
-					{
-						uart4_rx_buffer[j] = 0;
-					}
-					printf("UART4: Buffer overflow, reset\r\n");
 				}
 			}
 		}
