@@ -64,6 +64,10 @@ void Serial_SendString(char *str);             /* USART2 发送字符串 */
 void uart3_init(uint32_t baud);                /* USART3 初始化，替代示例中的 uart2 */
 void uart3_send_byte(uint8_t byte);            /* USART3 发送 1 字节 */
 void uart3_send_string(char *str);             /* USART3 发送字符串 */
+void uart4_init(uint32_t baud);                /* UART4 初始化（仅接收功能） */
+uint8_t uart4_get_rx_flag(void);               /* 获取 UART4 接收标志位 */
+uint8_t uart4_get_rx_data(void);               /* 获取 UART4 接收数据 */
+void uart4_clear_rx_flag(void);                /* 清除 UART4 接收标志位 */
 
 #endif  
 

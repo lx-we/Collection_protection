@@ -16,9 +16,33 @@
 #define WIRELESS_SEND_TIME 	3000	//上报数据时间间隔（单位：毫秒）
 #define SENSOR_READ_TIME	3000    //获取传感器数据时间间隔（单位：毫秒）
 #define KEY_SCAN_TIME		20    	//按键扫描（单位：毫秒）
+#define UART4_RX_BUF_MAX    64      // UART4 接收缓冲区大小
 
 uint8_t wireless_send_flag = 0;     //上报数据标志位
 uint8_t sensor_read_flag = 0;		//读取传感器数据标志位
+uint8_t dht11_available = 0;         //DHT11是否可用标志位
+uint8_t wireless_available = 0;      //无线模块是否可用标志位
+
+/* UART4 接收缓冲区 */
+uint8_t uart4_rx_buffer[UART4_RX_BUF_MAX] = {0};
+uint8_t uart4_rx_index = 0;
+
+/**
+ * @brief   字符串比较函数（替代strcmp）
+ * @param   str1: 字符串1
+ * @param   str2: 字符串2
+ * @retval  1-相等, 0-不相等
+ */
+uint8_t StringCompare(uint8_t *str1, uint8_t *str2)
+{
+    while (*str1 && *str2)
+    {
+        if (*str1 != *str2) return 0;
+        str1++;
+        str2++;
+    }
+    return (*str1 == *str2) ? 1 : 0;
+}
 
 int main(void)
 {
@@ -29,9 +53,23 @@ int main(void)
     sys_stm32_clock_init(9);    /* 系统时钟初始化, 72Mhz */
     delay_init(72);             /* 延时初始化 */
     usart_init(72, 115200);     /* 串口初始化波特率115200 (USART2使用APB1时钟源,最大36MHz) */
-    timer2_init(100,720);       /* 放在时钟配置之后，确保 TIM2 配置生效 */
+    
+    /* 无线模块初始化，失败则跳过继续运行 */
     wireless_init();                //无线模块初始化并连接onenet mqtt服务器
+    if((WirelessStatus.error_code & (ERROR_WiFi_CONNECT | ERROR_MQTT_CONNECT)) == 0)
+    {
+        wireless_available = 1;
+        printf("Wireless Module Init OK\r\n");
+    }
+    else
+    {
+        wireless_available = 0;
+        printf("Wireless Module Not Available, Continue Without Wireless\r\n");
+        printf("Error Code: 0x%04X\r\n", WirelessStatus.error_code);
+    }
+    
     led_init();
+    uart4_init(115200);         /* UART4 初始化，波特率115200，仅接收功能 */
     key_init();
     lock_init();                 /* 初始化电磁锁 */
     sr602_init();                 /* 初始化SR602人体感应模块 */
@@ -40,13 +78,31 @@ int main(void)
 
 
 
-    while (dht11_init())        /* DHT11初始化 */
+    /* DHT11初始化，尝试3次，失败则跳过继续运行 */
+    uint8_t dht11_init_retry = 0;
+    for (dht11_init_retry = 0; dht11_init_retry < 3; dht11_init_retry++)
     {
-        printf("DHT11 Error\r\n");
-        delay_ms(200);
+        if (dht11_init() == 0)
+        {
+            dht11_available = 1;
+            printf("DHT11 Init OK\r\n");
+            break;
+        }
+        else
+        {
+            printf("DHT11 Error, retry %d/3\r\n", dht11_init_retry + 1);
+            delay_ms(200);
+        }
     }
     
-    dht11_timer_init();                 /* 初始化TIM6定时器中断,用于定时读取DHT11数据 */
+    if (dht11_available == 0)
+    {
+        printf("DHT11 Not Available, Continue Without DHT11\r\n");
+    }
+    else
+    {
+        dht11_timer_init();                 /* 初始化TIM6定时器中断,用于定时读取DHT11数据 */
+    }
 
 
     
@@ -57,9 +113,15 @@ int main(void)
     }
     ws2812_display(rgb_buf, LED_NUM);
 
-    /* 先手动上报一次，确认 MQTT 上报流程通畅 */
-    wireless_onenet_data_handler();    /* 更新 OneNET 属性缓存 */
-    wireless_publish_data();           /* 立即上报一次到 OneNET */
+    /* 先手动上报一次，确认 MQTT 上报流程通畅（仅当无线模块可用时） */
+    if (wireless_available == 1)
+    {
+        wireless_onenet_data_handler();    /* 更新 OneNET 属性缓存 */
+        wireless_publish_data();           /* 立即上报一次到 OneNET */
+    }
+    
+    /* 所有初始化完成后再启动 TIM2 定时器（避免中断影响初始化过程中的 delay） */
+    timer2_init(100,720);       /* TIM2 1ms 中断，用于定时任务 */
     
     while (1)
     {
@@ -107,23 +169,89 @@ int main(void)
             }
             printf("After toggle, PA3 status: %d\r\n", lock_get());
         }
-        if(sensor_read_flag == 1)			//读取传感器数据标志位
+		if(sensor_read_flag == 1)			//读取传感器数据标志位
 		{
 			sensor_read_flag = 0;
-			dht11_get_data(&dht11_data);	//获取温湿度数据
+			if (dht11_available == 1)        //只有DHT11可用时才读取
+			{
+				dht11_get_data(&dht11_data);	//获取温湿度数据
+			}
 		}
 		
 		if(wireless_send_flag == 1) 		//数据上报标志位
 		{
 			wireless_send_flag = 0;
-			wireless_system_handler();		//执行无线模块相关事件
-			wireless_onenet_data_handler();	//处理有关onenet的数据
-			if((WirelessStatus.error_code & ERROR_MQTT_CONNECT) == 0)  wireless_publish_data(); 	//发布数据测试	
+			if (wireless_available == 1)  //只有无线模块可用时才处理
+			{
+				wireless_system_handler();		//执行无线模块相关事件
+				wireless_onenet_data_handler();	//处理有关onenet的数据
+				if((WirelessStatus.error_code & ERROR_MQTT_CONNECT) == 0)  wireless_publish_data(); 	//发布数据测试
+			}
 		}		
-		if(wireless_get_receive_flag() == W_OK)		//无线模块接收到数据
+		if(wireless_get_receive_flag() == W_OK && wireless_available == 1)		//无线模块接收到数据（仅当无线模块可用时）
 		{
 			wireless_receive_data_handler();		//接收数据处理函数
-		}		
+		}
+		
+		/* UART4 接收数据处理 */
+		if (uart4_get_rx_flag() == 1)
+		{
+			uint8_t rx_byte = uart4_get_rx_data();
+			uart4_clear_rx_flag();
+			/* 调试信息已在中断中打印，这里不再重复打印 */
+			
+			/* 接收到换行符或回车符 = 指令完整 */
+			if (rx_byte == '\n' || rx_byte == '\r')
+			{
+				if (uart4_rx_index > 0)  /* 确保有数据 */
+				{
+					uart4_rx_buffer[uart4_rx_index] = '\0';
+					
+					/* 字符串指令处理 */
+					if (StringCompare(uart4_rx_buffer, (uint8_t*)"1") == 1 || 
+					    StringCompare(uart4_rx_buffer, (uint8_t*)"ON") == 1 ||
+					    StringCompare(uart4_rx_buffer, (uint8_t*)"DETECTED") == 1)
+					{
+						LED0(0);  /* LED0 亮 */
+						printf("UART4: LED0 ON (received: %s)\r\n", uart4_rx_buffer);
+					}
+					else if (StringCompare(uart4_rx_buffer, (uint8_t*)"0") == 1 || 
+					         StringCompare(uart4_rx_buffer, (uint8_t*)"OFF") == 1)
+					{
+						LED0(1);  /* LED0 灭 */
+						printf("UART4: LED0 OFF (received: %s)\r\n", uart4_rx_buffer);
+					}
+					else
+					{
+						printf("UART4: Unknown command: %s\r\n", uart4_rx_buffer);
+					}
+				}
+				
+				/* 重置缓冲区 */
+				uart4_rx_index = 0;
+				for (j = 0; j < UART4_RX_BUF_MAX; j++)
+				{
+					uart4_rx_buffer[j] = 0;
+				}
+			}
+			else
+			{
+				/* 保存接收到的字符 */
+				uart4_rx_buffer[uart4_rx_index] = rx_byte;
+				uart4_rx_index++;
+				
+				/* 缓冲区溢出保护 */
+				if (uart4_rx_index >= UART4_RX_BUF_MAX - 1)
+				{
+					uart4_rx_index = 0;
+					for (j = 0; j < UART4_RX_BUF_MAX; j++)
+					{
+						uart4_rx_buffer[j] = 0;
+					}
+					printf("UART4: Buffer overflow, reset\r\n");
+				}
+			}
+		}
     }
 }
 

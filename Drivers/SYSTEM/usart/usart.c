@@ -24,6 +24,7 @@
 
 #include "./SYSTEM/sys/sys.h"
 #include "./SYSTEM/usart/usart.h"
+#include "./BSP/LED/led.h"
 
 /* 如果使用os,则包括下面的头文件即可. */
 #if SYS_SUPPORT_OS
@@ -224,6 +225,151 @@ void USART3_IRQHandler(void)
         /* 调用无线模块接收回调函数 */
         extern void wireless_receive_callback(uint8_t byte);
         wireless_receive_callback(rxdata);
+    }
+}
+
+/* UART4 接收相关变量 */
+#define UART4_RX_BUF_MAX    64      /* 接收缓冲区大小 */
+static uint8_t uart4_rx_flag = 0;   /* 接收标志位 */
+static uint8_t uart4_rx_data = 0;   /* 接收数据缓存 */
+
+/**
+ * @brief   UART4 初始化（仅接收功能）
+ * @param   baud: 波特率
+ * @retval  无
+ */
+void uart4_init(uint32_t baud)
+{
+    RCC->APB2ENR |= 1 << 4;   /* GPIOC 时钟使能 */
+    RCC->APB1ENR |= 1 << 19;  /* UART4 时钟使能 */
+
+    /* 配置 RX 引脚 PC11 为复用功能输入模式（AF），根据原理图PC11是U4_RX */
+    /* 注意：UART的RX引脚必须配置为复用功能模式，才能将UART外设连接到GPIO引脚 */
+    /* 对于STM32F103，复用功能输入：CNF[1:0]=10(复用推挽), MODE[1:0]=00(输入模式) = 0x08 */
+    /* 直接配置GPIO寄存器，确保RX引脚正确配置为复用功能输入模式 */
+    GPIOC->CRH &= ~(0x0F << ((11 - 8) * 4));  /* 清除PC11的配置位（PC11在CRH寄存器，位[15:12]） */
+    GPIOC->CRH |= (0x08 << ((11 - 8) * 4));   /* CNF[1:0]=10(复用推挽), MODE[1:0]=00(输入) = 0x08 */
+    GPIOC->ODR |= (1 << 11);                  /* 设置ODR位使能上拉（配合CNF=10实现上拉输入） */
+    
+    /* 验证配置 */
+    uint32_t pcr11 = (GPIOC->CRH >> ((11 - 8) * 4)) & 0x0F;
+    printf("UART4 PC11 GPIO Config: CRH[15:12]=0x%02lX (should be 0x08 for AF input)\r\n", pcr11);
+
+    /* APB1 = 36MHz → UART4 时钟 = 36MHz */
+    uint32_t brr = (36000000U + baud / 2) / baud;
+    UART4->BRR = brr;
+    
+    printf("UART4 BRR: %lu (calculated for %lu baud, APB1=36MHz)\r\n", brr, baud);  /* 调试：打印BRR值 */
+
+    UART4->CR1 = 0;
+    /* 不设置 TE (发送使能)，只开启接收 */
+    /* 默认配置：8数据位，无校验，1停止位（CR1默认值已满足） */
+    /* CR1[12] = 0: 8数据位, CR1[10] = 0: 无校验, CR2[13:12] = 00: 1停止位 */
+    UART4->CR1 |= 1 << 2;    /* RE (接收使能) */
+    UART4->CR1 |= 1 << 5;    /* RXNEIE (接收中断使能) */
+    UART4->CR1 |= 1 << 13;   /* UE (USART 使能) */
+    
+    printf("UART4 CR1: 0x%04X (RE=1, RXNEIE=1, UE=1)\r\n", (uint16_t)UART4->CR1);  /* 调试：打印CR1值 */
+
+    /* 清除所有可能的错误标志（读取DR寄存器可以清除错误标志） */
+    uint32_t temp_sr = UART4->SR;
+    if (temp_sr & (1 << 1)) { uint8_t dummy = UART4->DR; (void)dummy; }  /* 清除FE */
+    if (temp_sr & (1 << 2)) { uint8_t dummy = UART4->DR; (void)dummy; }  /* 清除NE */
+    if (temp_sr & (1 << 3)) { uint8_t dummy = UART4->DR; (void)dummy; }  /* 清除ORE */
+
+    sys_nvic_init(0, 0, UART4_IRQn, 2);
+    
+    /* 初始化接收标志位 */
+    uart4_rx_flag = 0;
+    uart4_rx_data = 0;
+    
+    printf("UART4 Init: PC11(RX), Baud=%lu, NVIC Priority=2\r\n", baud);  /* 调试信息 */
+}
+
+/**
+ * @brief   获取 UART4 接收标志位
+ * @param   无
+ * @retval  1-接收到数据, 0-未接收到数据
+ */
+uint8_t uart4_get_rx_flag(void)
+{
+    return uart4_rx_flag;
+}
+
+/**
+ * @brief   获取 UART4 接收数据
+ * @param   无
+ * @retval  接收到的数据
+ */
+uint8_t uart4_get_rx_data(void)
+{
+    return uart4_rx_data;
+}
+
+/**
+ * @brief   清除 UART4 接收标志位
+ * @param   无
+ * @retval  无
+ */
+void uart4_clear_rx_flag(void)
+{
+    uart4_rx_flag = 0;
+}
+
+/**
+ * @brief   UART4 中断服务函数
+ * @param   无
+ * @retval  无
+ */
+void UART4_IRQHandler(void)
+{
+    uint32_t sr = UART4->SR;  /* 读取状态寄存器 */
+    
+    if (sr & (1 << 5))  /* 接收到数据 (RXNE) */
+    {
+        uart4_rx_data = UART4->DR;  /* 读取接收到的数据（读取 DR 会自动清除 RXNE 标志） */
+        uart4_rx_flag = 1;           /* 设置接收标志位 */
+        
+        /* 检查是否有错误标志（在读取DR之前检查） */
+        uint8_t has_error = 0;
+        if (sr & (1 << 1)) { has_error = 1; printf("UART4: FE(帧错误) "); }  /* FE: 帧错误 */
+        if (sr & (1 << 2)) { has_error = 1; printf("UART4: NE(噪声错误) "); }  /* NE: 噪声错误 */
+        if (sr & (1 << 3)) { has_error = 1; printf("UART4: ORE(过载错误) "); }  /* ORE: 过载错误 */
+        
+        if (has_error == 0)
+        {
+            /* 正常接收，打印数据 */
+            printf("UART4 ISR: RX=0x%02X", uart4_rx_data);
+            if (uart4_rx_data >= 32 && uart4_rx_data < 127)
+            {
+                printf(" ('%c')\r\n", uart4_rx_data);
+            }
+            else
+            {
+                printf(" (非ASCII)\r\n");
+            }
+        }
+        else
+        {
+            printf("UART4 ISR: RX=0x%02X (有错误)\r\n", uart4_rx_data);
+        }
+    }
+    
+    /* 清除错误标志（需要读取DR才能清除） */
+    if (sr & (1 << 3))  /* ORE: 过载错误 */
+    {
+        uint8_t temp = UART4->DR;  /* 读取 DR 清除 ORE */
+        (void)temp;
+    }
+    if (sr & (1 << 1))  /* FE: 帧错误 */
+    {
+        uint8_t temp = UART4->DR;  /* 读取 DR 清除 FE */
+        (void)temp;
+    }
+    if (sr & (1 << 2))  /* NE: 噪声错误 */
+    {
+        uint8_t temp = UART4->DR;  /* 读取 DR 清除 NE */
+        (void)temp;
     }
 }
 

@@ -202,16 +202,16 @@ uint8_t wireless_get_receive_flag(void)
   */
 uint8_t wireless_send_command(char *cmd, char *res, uint8_t sendCount, uint8_t clear_buffer, uint16_t delay_xms, uint8_t printf_enable)
 {
-    if(printf_enable == W_ENABLE) wireless_log_print("%s",cmd);		//这里可以打印每次发送的指令
-    while(sendCount--)
-    {
+	if(printf_enable == W_ENABLE) wireless_log_print("%s",cmd);		//这里可以打印每次发送的指令
+	while(sendCount--)
+	{
         wireless_clear_buffer();  // 清除之前的接收数据
-        wireless_send_data(cmd);   //AT指令发送
-        wireless_delay_ms(delay_xms);     //适当增加点延迟，等待串口接收完成
-        if(wireless_get_receive_flag() == W_OK)                     //如果串口接收到换行回车为结尾的数据
-        {  
+		wireless_send_data(cmd);   //AT指令发送
+		wireless_delay_ms(delay_xms);     //适当增加点延迟，等待串口接收完成
+		if(wireless_get_receive_flag() == W_OK)                     //如果串口接收到换行回车为结尾的数据
+		{  
 #if ONENET_MQTT_SET_ENABLE			
-            if(wireless_get_onenet_command_flag() == W_OK) {WirelessStatus.receiveDataFlag = 1;return 0;}    //这里特殊判断是否有属性设置信息，优先级最高，直接中断当前AT指令
+			if(wireless_get_onenet_command_flag() == W_OK) {WirelessStatus.receiveDataFlag = 1;return 0;}    //这里特殊判断是否有属性设置信息，优先级最高，直接中断当前AT指令
 #endif
             /* 如果模块忙，先不判失败，延时重试当前指令 */
             if(strstr((const char *)W_RxBuffer, "busy p") != NULL)
@@ -220,14 +220,14 @@ uint8_t wireless_send_command(char *cmd, char *res, uint8_t sendCount, uint8_t c
                 wireless_delay_ms(500);
                 continue;
             }
-            if(strstr((const char *)W_RxBuffer, res) != NULL)		//若找到关键字
-            {		
-                if(clear_buffer == W_TRUE) wireless_clear_buffer();							//清除数组
-                return 1;                                           //退出，返回0-成功
-            }
-            wireless_log_print("error recovery data:%s",W_RxBuffer);      //当接收错误时，打印出接收的数据，方便调试
-            if(clear_buffer == W_TRUE) wireless_clear_buffer();
-        }
+			if(strstr((const char *)W_RxBuffer, res) != NULL)		//若找到关键字
+			{		
+				if(clear_buffer == W_TRUE) wireless_clear_buffer();							//清除数组
+				return 1;                                           //退出，返回0-成功
+			}
+			wireless_log_print("error recovery data:%s",W_RxBuffer);      //当接收错误时，打印出接收的数据，方便调试
+			if(clear_buffer == W_TRUE) wireless_clear_buffer();
+		}
         else
         {
             // 调试信息：显示是否接收到数据
@@ -236,9 +236,9 @@ uint8_t wireless_send_command(char *cmd, char *res, uint8_t sendCount, uint8_t c
                 wireless_log_print("RX(no CRLF):%s\r\n", W_RxBuffer);
             }
         }
-        wireless_delay_ms(500);
-    }
-    return 0;		//返回1-失败
+		wireless_delay_ms(500);
+	}
+	return 0;		//返回1-失败
 }
 
 /**  
@@ -255,20 +255,20 @@ void wireless_init(void)
 	//复位模块，清除所有状态
 	if(wireless_send_command("AT+RST\r\n", "", 3, W_TRUE, 500, W_ENABLE) != W_OK) 					WirelessStatus.error_code |= (1 << 0);
 	wireless_delay_ms(3000);  // ESP8266复位后需要3秒启动时间
-    //关闭AT指令回显，减少进入串口中断的“\r\n”判断	                                                                            
+	//关闭AT指令回显，减少进入串口中断的“\r\n”判断	                                                                            
     if(wireless_send_command("ATE0\r\n", "OK", 3, W_TRUE, 800, W_ENABLE) != W_OK)					WirelessStatus.error_code |= (1 << 1);	
-    //设置模式一，配置它作为Wi-Fi客户端，让其可以连接到无线路由器                                                                                                            
+	//设置模式一，配置它作为Wi-Fi客户端，让其可以连接到无线路由器                                                                                                            
     if(wireless_send_command("AT+CWMODE=1\r\n", "OK", 3, W_TRUE, 800, W_ENABLE) != W_OK)				WirelessStatus.error_code |= (1 << 2);	
-    //开启DHCP,在连接到Wi-Fi网络时能够自动获得IP地址                                                                                                                  
+	//开启DHCP,在连接到Wi-Fi网络时能够自动获得IP地址                                                                                                                  
     if(wireless_send_command("AT+CWDHCP=1,1\r\n", "OK", 3, W_TRUE, 800, W_ENABLE) != W_OK)			WirelessStatus.error_code |= (1 << 3);		
-    //连接2.4GHz wifi                                                                                                             
+	//连接2.4GHz wifi                                                                                                             
     if(wireless_send_command(WIRELESS_WIFI_INFO, "GOT IP", 1, W_TRUE, 8000, W_ENABLE) != W_OK) 		WirelessStatus.error_code |= (1 << 4) | ERROR_WiFi_CONNECT;		
-    //用于配置MQTT客户端的用户参数                                                                                                         
+	//用于配置MQTT客户端的用户参数                                                                                                         
     if(wireless_send_command(ONENET_MQTT_USERCFG_INFO, "OK", 1, W_TRUE, 2000, W_ENABLE) != W_OK)		WirelessStatus.error_code |= (1 << 5);		
-    //连接onenet的MQTT服务器                                                                                                          
+	//连接onenet的MQTT服务器                                                                                                          
     // 保持期望关键字为 "OK"，仅适当加长等待时间
     if(wireless_send_command(ONENET_MQTT_SERVER_INFO, "OK", 1, W_TRUE, 8000, W_ENABLE) != W_OK) 		WirelessStatus.error_code |= (1 << 6) | ERROR_MQTT_CONNECT;		
-    //订阅设备属性上报响应主题	                                                                                                        
+	//订阅设备属性上报响应主题	                                                                                                        
     if(wireless_send_command(ONENET_MQTT_REPLY_TOPIC, "OK", 1, W_TRUE, 2000, W_ENABLE) != W_OK) 		WirelessStatus.error_code |= (1 << 7);
 #if ONENET_MQTT_SET_ENABLE	
 	//订阅设备属性设置请求（属性设置主题，有时服务器响应会偏慢，适当拉长等待时间）                                                                                                          
